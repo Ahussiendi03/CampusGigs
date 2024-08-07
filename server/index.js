@@ -24,7 +24,7 @@ app.use(cookieParser());
 
 app.post("/sign-in", (req, res) => {
     const { email, password } = req.body;
-    
+
     // Check in ApplicantModel
     ApplicantModel.findOne({ email: email })
         .then(applicant => {
@@ -37,9 +37,9 @@ app.post("/sign-in", (req, res) => {
                             { expiresIn: '1d' }
                         );
                         res.cookie("token", token);
-                        res.json("Success");
+                        res.json({ status: "Success", role: applicant.role });
                     } else {
-                        res.json("The password is incorrect");
+                        res.json({ status: "Error", message: "The password is incorrect" });
                     }
                 });
             } else {
@@ -55,9 +55,9 @@ app.post("/sign-in", (req, res) => {
                                         { expiresIn: '1d' }
                                     );
                                     res.cookie("token", token);
-                                    res.json("Success");
+                                    res.json({ status: "Success", role: employer.role });
                                 } else {
-                                    res.json("The password is incorrect");
+                                    res.json({ status: "Error", message: "The password is incorrect" });
                                 }
                             });
                         } else {
@@ -73,9 +73,9 @@ app.post("/sign-in", (req, res) => {
                                                     { expiresIn: '1d' }
                                                 );
                                                 res.cookie("token", token);
-                                                res.json("Success");
+                                                res.json({ status: "Success", role: parent.role });
                                             } else {
-                                                res.json("The password is incorrect");
+                                                res.json({ status: "Error", message: "The password is incorrect" });
                                             }
                                         });
                                     } else {
@@ -91,38 +91,39 @@ app.post("/sign-in", (req, res) => {
                                                                 { expiresIn: '1d' }
                                                             );
                                                             res.cookie("token", token);
-                                                            res.json("Success");
+                                                            res.json({ status: "Success", role: admin.role });
                                                         } else {
-                                                            res.json("The password is incorrect");
+                                                            res.json({ status: "Error", message: "The password is incorrect" });
                                                         }
                                                     });
                                                 } else {
-                                                    res.json("No record existed");
+                                                    res.json({ status: "Error", message: "No record existed" });
                                                 }
                                             })
                                             .catch(err => {
                                                 console.log(err);
-                                                res.status(500).json("An error occurred while processing your request");
+                                                res.status(500).json({ status: "Error", message: "An error occurred while processing your request" });
                                             });
                                     }
                                 })
                                 .catch(err => {
                                     console.log(err);
-                                    res.status(500).json("An error occurred while processing your request");
+                                    res.status(500).json({ status: "Error", message: "An error occurred while processing your request" });
                                 });
                         }
                     })
                     .catch(err => {
                         console.log(err);
-                        res.status(500).json("An error occurred while processing your request");
+                        res.status(500).json({ status: "Error", message: "An error occurred while processing your request" });
                     });
             }
         })
         .catch(err => {
             console.log(err);
-            res.status(500).json("An error occurred while processing your request");
+            res.status(500).json({ status: "Error", message: "An error occurred while processing your request" });
         });
 });
+
 
 
 

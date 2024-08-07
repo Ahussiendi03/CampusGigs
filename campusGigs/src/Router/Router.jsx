@@ -9,6 +9,9 @@ import Contact from "../Pages/Contact";
 import EmployerSignUp from "../components/employerSignUp";
 import ParentSignUp from "../components/ParentSignUp";
 import ApplicantSignUp from "../components/ApplicantSignUp";
+import EmployerDb from "../components/EmployerDb";
+import EmployerMyAcc from "../components/EmployerMyAcc";
+import EmployerAppList from "../components/EmployerAppList";
 
 const router = createBrowserRouter([
     {
@@ -24,6 +27,9 @@ const router = createBrowserRouter([
         {path: "employerSignUp", element: <EmployerSignUp />},
         {path: "parentSignUp", element: <ParentSignUp />},
         {path: "applicantSignUp", element: <ApplicantSignUp />},
+        {path: "employerDb", element: <EmployerDb />},
+        {path: "employerMyAcc", element: <EmployerMyAcc />},
+        {path: "employerAppList", element: <EmployerAppList />},
 
       ]
     },

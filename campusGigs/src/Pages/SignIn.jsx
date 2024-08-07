@@ -15,10 +15,19 @@ const SignIn = () => {
     axios.post('http://localhost:5000/sign-in', { email, password })
       .then(result => {
         console.log(result);
-        if (result.data === "Success") {
-          navigate('/');
+        if (result.data.status === "Success") {
+          const role = result.data.role; // Assuming role is returned in the response
+          if (role === "employer") {
+            navigate('/employerDb');
+          } else if (role === "parent") {
+            navigate('/parentDb');
+          } else if (role === "applicant") {
+            navigate('/applicantDb');
+          } else {
+            navigate('/');
+          }
         } else {
-          alert(result.data);
+          alert(result.data.message);
         }
       })
       .catch(err => console.log(err));
