@@ -1,8 +1,32 @@
 import React from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import '@fortawesome/fontawesome-free/css/all.min.css';
 
 const EmployerDb = () => {
+
+  const navigate = useNavigate();
+
+  const handleLogout = async () => {
+    const confirmLogout = window.confirm('Are you sure you want to log out?');
+    
+    if (confirmLogout) {
+      try {
+        const response = await fetch('http://localhost:5000/logout', {
+          method: 'POST',
+          credentials: 'include',
+        });
+
+        if (response.ok) {
+          navigate('/sign-in'); // Redirect to login page after logout
+        } else {
+          console.error('Logout failed');
+        }
+      } catch (error) {
+        console.error('An error occurred during logout:', error);
+      }
+    }
+  };
+
   return (
     <div className="flex justify-center">
       {/* Sidebar */}
@@ -13,27 +37,23 @@ const EmployerDb = () => {
         </div>
         <div className="flex items-center mb-8">
           <i className="fas fa-user text-lg mr-2"></i>
-          <Link to ="/EmployerMyAcc" className="text-lg font-medium mr-2 ml-2">My Account </Link>
+          <Link to="/EmployerMyAcc" className="text-lg font-medium mr-2 ml-2">My Account </Link>
         </div>
         <div className="flex items-center mb-8">
           <i className="fas fa-users text-lg mr-2"></i>
-          <Link to ="/EmployerAppList" className="text-lg font-medium mr-2 ml-2">Applicant List</Link>
+          <Link to="/EmployerStaffs" className="text-lg font-medium mr-2 ml-2">Current Hired Staffs</Link>
+        </div>
+        <div className="flex items-center mb-8">
+          <i className="fas fa-users text-lg mr-2"></i>
+          <Link to="/EmployerAppList" className="text-lg font-medium mr-2 ml-2">Applicant List</Link>
         </div>
         <div className="flex items-center mb-8">
           <i className="fas fa-briefcase text-lg mr-2"></i>
-          <p className="text-lg font-medium mr-2 ml-2">Post Job</p>
+          <Link to="/EmployerJobPost" className="text-lg font-medium mr-2 ml-2">Post Job</Link>
         </div>
         <div className="flex items-center mb-8">
-         <i className="fas fa-comments text-lg mr-2"></i>
-        <p className="text-lg font-medium ml-2">Feedbacks</p>
-        </div>
-        <div className="flex items-center mb-8">
-          <i className="fas fa-cog text-lg mr-2"></i>
-          <p className="text-lg font-medium mr-2 ml-2">Settings</p>
-        </div>
-        <div className="flex items-center mb-8">
-          <i className="fas fa-sign-out-alt text-lg mr-2"></i>
-          <p className="text-lg font-medium mr-2 ml-2">Logout</p>
+          <i className="fas fa-comments text-lg mr-2"></i>
+          <p className="text-lg font-medium ml-2">Feedbacks</p>
         </div>
       </div>
 
@@ -69,40 +89,37 @@ const EmployerDb = () => {
           </div>
         </div>
         <div className="mt-6">
-        <div className="w-full flex justify-between  mb-3">
-          <p className="text-xl font-bold">My Team (Current Hired Staffs)</p>
-          <a href="#" className="text-black underline mr-4 mt-1 text-lg font-semi">View All</a>
-        </div>
-        <h2 className="mb-20 mr-3 font-bold text-base text-black bg-yellow-300 py-2 px-4 rounded w-[1000px] flex justify-between">
-          <span className="mr-8">FIRST NAME</span>
-          <span className="mr-9">LAST NAME</span>
-          <span className="mr-8">BUSINESS COMPANY</span>
-          <span className="mr-6">JOB POSITION</span>
-          <span className="mr-6">STATUS</span>
-          <span className="mr-6">ACTION</span>
-        </h2>
-        <div className="w-full flex justify-between items-center mb-3">
-          <p className="text-xl font-bold">Applicants List</p>
-          <a href="#" className="text-black underline mr-4 mt-1 text-lg font-semi">View All</a>
-        </div>
-        <h2 className="mb-20 mr-3 font-bold text-base text-black bg-yellow-300 py-2 px-4 rounded w-[1000px] flex justify-between">
-          <span className="mr-8">FIRST NAME</span>
-          <span className="mr-9">LAST NAME</span>
-          <span className="mr-6">YEAR LEVEL</span>
-          <span className="mr-6">STATUS</span>
-          <span className="mr-6">ACTION</span>
-        </h2>
-        <div className="w-full flex justify-between items-center mb-3">
-          <p className="text-xl font-bold">Jobs Posted</p>
-          <a href="#" className="text-black underline mr-4 mt-1 text-lg font-semi">View All</a>
-        </div>
-        <h2 className="mb-20 mr-3 font-bold text-base text-black bg-yellow-300 py-2 px-4 rounded w-[1000px] flex justify-between">
-          <span className="mr-8">BUSINESS COMPANY</span>
-          <span className="mr-6">ADDRESS</span>
-          <span className="mr-6">JOB POSITION</span>
-          <span className="mr-6">SCHEDULE</span>
-          <span className="mr-6">ACTION</span>
-        </h2>
+          <div className="w-full flex justify-between  mb-3">
+            <p className="text-xl font-bold">My Team (Current Hired Staffs)</p>
+            <a href="#" className="text-black underline mr-4 mt-1 text-lg font-semi">View All</a>
+          </div>
+          <h2 className="mb-20 mr-3 font-bold text-base text-black bg-yellow-300 py-2 px-4 rounded w-[1000px] flex justify-between">
+            <span className="mr-8">FIRST NAME</span>
+            <span className="mr-9">LAST NAME</span>
+            <span className="mr-8">BUSINESS COMPANY</span>
+            <span className="mr-6">JOB POSITION</span>
+            <span className="mr-6">STATUS</span>
+          </h2>
+          <div className="w-full flex justify-between items-center mb-3">
+            <p className="text-xl font-bold">Applicants List</p>
+            <a href="#" className="text-black underline mr-4 mt-1 text-lg font-semi">View All</a>
+          </div>
+          <h2 className="mb-20 mr-3 font-bold text-base text-black bg-yellow-300 py-2 px-4 rounded w-[1000px] flex justify-between">
+            <span className="mr-8">FIRST NAME</span>
+            <span className="mr-9">LAST NAME</span>
+            <span className="mr-6">YEAR LEVEL</span>
+            <span className="mr-6">STATUS</span>
+          </h2>
+          <div className="w-full flex justify-between items-center mb-3">
+            <p className="text-xl font-bold">Jobs Posted</p>
+            <a href="#" className="text-black underline mr-4 mt-1 text-lg font-semi">View All</a>
+          </div>
+          <h2 className="mb-20 mr-3 font-bold text-base text-black bg-yellow-300 py-2 px-4 rounded w-[1000px] flex justify-between">
+            <span className="mr-8">BUSINESS COMPANY</span>
+            <span className="mr-6">ADDRESS</span>
+            <span className="mr-6">JOB POSITION</span>
+            <span className="mr-6">SCHEDULE</span>
+          </h2>
         </div>
       </div>
     </div>

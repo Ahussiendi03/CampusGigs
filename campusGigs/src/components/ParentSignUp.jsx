@@ -1,6 +1,9 @@
 import React, { useState } from 'react';
-import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
+import axios from 'axios';
+import signUpImage from '../images/Login_Page_Website_UI_Prototype__2_-removebg-preview.png';
+import signUpImage2 from '../images/Login_Page_Website_UI_Prototype__8_-removebg-preview.png';
+import signUpImage3 from '../images/Login_Page_Website_UI_Prototype__7_-removebg-preview.png';
 
 const ParentSignUp = () => {
   const [step, setStep] = useState(1);
@@ -10,19 +13,36 @@ const ParentSignUp = () => {
     email: '',
     password: '',
     profilePicture: null,
-    id: null,
     birthCertificate: null,
-    campusAddress: ''
+    id: null,
+    campusAddress: '',
+    houseNumber: '',
+    contactNumber: ''
+  });
+  const [preview, setPreview] = useState({
+    profilePicture: null,
+    birthCertificate: null,
+    id: null
   });
   const navigate = useNavigate();
 
   const handleChange = (e) => {
     const { name, value, files } = e.target;
     if (files) {
+      const file = files[0];
       setFormData(prevState => ({
         ...prevState,
-        [name]: files[0]
+        [name]: file
       }));
+
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setPreview(prevState => ({
+          ...prevState,
+          [name]: reader.result
+        }));
+      };
+      reader.readAsDataURL(file);
     } else {
       setFormData(prevState => ({
         ...prevState,
@@ -32,6 +52,26 @@ const ParentSignUp = () => {
   };
 
   const handleNext = () => {
+    if (step === 1) {
+      const { firstName, lastName, email, password } = formData;
+      if (!firstName || !lastName || !email || !password) {
+        alert('Please fill out all the fields.');
+        return;
+      }
+    }
+    if (step === 2 && !formData.profilePicture) {
+      alert('Please upload your profile picture.');
+      return;
+    }
+    if (step === 3 && !formData.birthCertificate) {
+      alert('Please upload your childs birth certificate.');
+      return;
+    }
+  
+    if (step === 4 && !formData.id) {
+      alert('Please upload your valid ID.');
+      return;
+    }
     setStep(prevStep => prevStep + 1);
   };
 
@@ -49,192 +89,351 @@ const ParentSignUp = () => {
 
     axios.post('http://localhost:5000/parentRegister', data)
       .then(res => {
+        console.log('Success:', res.data);
         navigate('/sign-in');
-      }).catch(err => console.log(err));
+      })
+      .catch(err => {
+        console.error('Error:', err.response ? err.response.data : err.message);
+      });
   };
 
   return (
-    <div className="flex justify-center items-center min-h-screen bg-gray-100">
-      <div className="bg-white p-8 rounded-lg shadow-md w-full max-w-md">
-        <h2 className="text-2xl font-bold mb-6 text-center">Parent Sign Up</h2>
-        <form onSubmit={handleSubmit}>
-          {step === 1 && (
-            <>
-              <div className="mb-4">
-                <label htmlFor="firstName" className="block text-sm font-medium text-gray-700">First Name</label>
-                <input
-                  type="text"
-                  id="firstName"
-                  name="firstName"
-                  className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
-                  value={formData.firstName}
-                  onChange={handleChange}
-                  required
-                />
-              </div>
-              <div className="mb-4">
-                <label htmlFor="lastName" className="block text-sm font-medium text-gray-700">Last Name</label>
-                <input
-                  type="text"
-                  id="lastName"
-                  name="lastName"
-                  className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
-                  value={formData.lastName}
-                  onChange={handleChange}
-                  required
-                />
-              </div>
-              <div className="mb-4">
-                <label htmlFor="email" className="block text-sm font-medium text-gray-700">Email</label>
-                <input
-                  type="email"
-                  id="email"
-                  name="email"
-                  className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
-                  value={formData.email}
-                  onChange={handleChange}
-                  required
-                />
-              </div>
-              <div className="mb-4">
-                <label htmlFor="password" className="block text-sm font-medium text-gray-700">Password</label>
-                <input
-                  type="password"
-                  id="password"
-                  name="password"
-                  className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
-                  value={formData.password}
-                  onChange={handleChange}
-                  required
-                />
-              </div>
-              <button
-                type="button"
-                onClick={handleNext}
-                className="w-full bg-indigo-600 text-white py-2 px-4 rounded-md shadow-sm hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
-              >
-                Next
-              </button>
-            </>
-          )}
-          {step === 2 && (
-            <>
-              <div className="mb-4">
-                <label htmlFor="profilePicture" className="block text-sm font-medium text-gray-700">Upload Profile Picture</label>
-                <input
-                  type="file"
-                  id="profilePicture"
-                  name="profilePicture"
-                  className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
-                  onChange={handleChange}
-                  required
-                />
-              </div>
-              <button
-                type="button"
-                onClick={handlePrev}
-                className="w-full bg-gray-600 text-white py-2 px-4 rounded-md shadow-sm hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500 mb-2"
-              >
-                Previous
-              </button>
-              <button
-                type="button"
-                onClick={handleNext}
-                className="w-full bg-indigo-600 text-white py-2 px-4 rounded-md shadow-sm hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
-              >
-                Next
-              </button>
-            </>
-          )}
-          {step === 3 && (
-            <>
-              <div className="mb-4">
-                <label htmlFor="id" className="block text-sm font-medium text-gray-700">Upload Valid ID</label>
-                <input
-                  type="file"
-                  id="id"
-                  name="id"
-                  className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
-                  onChange={handleChange}
-                  required
-                />
-              </div>
-              <button
-                type="button"
-                onClick={handlePrev}
-                className="w-full bg-gray-600 text-white py-2 px-4 rounded-md shadow-sm hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500 mb-2"
-              >
-                Previous
-              </button>
-              <button
-                type="button"
-                onClick={handleNext}
-                className="w-full bg-indigo-600 text-white py-2 px-4 rounded-md shadow-sm hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
-              >
-                Next
-              </button>
-            </>
-          )}
-          {step === 4 && (
-            <>
-              <div className="mb-4">
-                <label htmlFor="birthCertificate" className="block text-sm font-medium text-gray-700">Upload Birth Certificate</label>
-                <input
-                  type="file"
-                  id="birthCertificate"
-                  name="birthCertificate"
-                  className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
-                  onChange={handleChange}
-                  required
-                />
-              </div>
-              <button
-                type="button"
-                onClick={handlePrev}
-                className="w-full bg-gray-600 text-white py-2 px-4 rounded-md shadow-sm hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500 mb-2"
-              >
-                Previous
-              </button>
-              <button
-                type="button"
-                onClick={handleNext}
-                className="w-full bg-indigo-600 text-white py-2 px-4 rounded-md shadow-sm hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
-              >
-                Next
-              </button>
-            </>
-          )}
-          {step === 5 && (
-            <>
-              <div className="mb-4">
-                <label htmlFor="campusAddress" className="block text-sm font-medium text-gray-700">Campus Address</label>
-                <input
-                  type="text"
-                  id="campusAddress"
-                  name="campusAddress"
-                  className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
-                  value={formData.campusAddress}
-                  onChange={handleChange}
-                  required
-                />
-              </div>
-              <button
-                type="button"
-                onClick={handlePrev}
-                className="w-full bg-gray-600 text-white py-2 px-4 rounded-md shadow-sm hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500 mb-2"
-              >
-                Previous
-              </button>
-              <button
-                type="submit"
-                className="w-full bg-indigo-600 text-white py-2 px-4 rounded-md shadow-sm hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
-              >
-                Submit
-              </button>
-            </>
-          )}
-        </form>
+    <div className="flex items-center justify-center">
+      {step === 1 && (
+        <div className="flex flex-col lg:flex-row items-center justify-center">
+          <img src={signUpImage} alt="Sign Up" className="ml-32 mb-20 w-1/2 h-auto lg:mb-0 lg:mr-10" />
+          <div className="ml-28 bg-maroon-700 rounded-lg shadow-md p-6 w-full flex items-center" style={{ height: '550px', width: '550px'}}>
+            <div className="w-full mt-0">
+              <h2 className="text-3xl font-bold text-yellow-400 mt-6 text-center">PARENT</h2>
+              <h2 className="text-3xl font-bold text-yellow-400 mb-6 text-center">REGISTRATION</h2>
+              <form onSubmit={handleSubmit} className="space-y-4">
+                <div>
+                  <label htmlFor="firstName" className="block text-yellow-400 text-sm mb-2">FIRST NAME:</label>
+                  <input
+                    type="text"
+                    id="firstName"
+                    name="firstName"
+                    placeholder="First Name"
+                    className="w-full p-3 bg-yellow-300 text-maroon-700 border-0 rounded-lg text-sm"
+                    value={formData.firstName}
+                    onChange={handleChange}
+                    required
+                  />
+                </div>
+                <div>
+                  <label htmlFor="lastName" className="block text-yellow-400 text-sm mb-2">LAST NAME:</label>
+                  <input
+                    type="text"
+                    id="lastName"
+                    name="lastName"
+                    placeholder="Last Name"
+                    className="w-full p-3 bg-yellow-300 text-maroon-700 border-0 rounded-lg text-sm"
+                    value={formData.lastName}
+                    onChange={handleChange}
+                    required
+                  />
+                </div>
+                <div>
+                  <label htmlFor="email" className="block text-yellow-400 text-sm mb-2">EMAIL:</label>
+                  <input
+                    type="email"
+                    id="email"
+                    name="email"
+                    placeholder="Email"
+                    className="w-full p-3 bg-yellow-300 text-maroon-700 border-0 rounded-lg text-sm"
+                    value={formData.email}
+                    onChange={handleChange}
+                    required
+                  />
+                </div>
+                <div>
+                  <label htmlFor="password" className="block text-yellow-400 text-sm mb-2">PASSWORD:</label>
+                  <input
+                    type="password"
+                    id="password"
+                    name="password"
+                    placeholder="Password"
+                    className="w-full p-3 bg-yellow-300 text-maroon-700 border-0 rounded-lg text-sm"
+                    value={formData.password}
+                    onChange={handleChange}
+                    required
+                  />
+                </div>        
+                <div className="text-center">
+                  <button
+                    type="button"
+                    onClick={handleNext}
+                    className="px-4 py-2 bg-yellow-300 text-maroon-700 font-bold rounded-md text-base"
+                  >
+                    Next
+      
+
+                  </button>
+                </div>
+              </form>
+            </div>
+          </div>
+        </div>
+      )}
+      {step === 2 && (
+        <div className="flex justify-between items-center min-w-full">
+        <div className="bg-gray-200 w-3/12 h-[550px] p-4 rounded-lg shadow-md">
+          <div className="flex items-center mb-8">
+          <i className="fas fa-check-square text-gray-400 text-3xl mr-2"></i>
+          <p className="text-lg font-medium mr-2 ml-2">Upload Profile Picture</p>
+          </div>
+          <div className="flex items-center mb-8">
+          <i className="fas fa-check-square text-gray-400 text-3xl mr-2"></i>
+          <p className="text-lg font-medium mr-2 ml-2">Upload Birth Cetificate of the Child</p>
+          </div>
+          <div className="flex items-center mb-8">
+          <i className="fas fa-check-square text-gray-400 text-3xl mr-2"></i>
+          <p className="text-lg font-medium mr-2 ml-2">Upload Valid ID</p>
+          </div>
+          <div className="flex items-center mb-8">
+          <i className="fas fa-check-square text-gray-400 text-3xl mr-2"></i>
+          <p className="text-lg font-medium mr-2 ml-2">Other Informations</p>
+          </div>
+        </div>
+      
+        <div className="flex-1 flex flex-col items-center justify-center">
+        <h2 className="mb-6 ml-4 text-center font-bold text-2xl text-maroon-700 bg-yellow-300 py-2 px-4 rounded w-[300px]">Parent Profile</h2>
+          <img src={preview.profilePicture || signUpImage2} alt="Profile Preview" className="rounded-full w-80 h-72 mb-6 ml-5 object-cover" />
+          <label htmlFor="profilePicture" className="cursor-pointer mb-5 ml-5 block py-2 px-4 bg-maroon-700 text-yellow-300 font-bold text-lg rounded-lg text-center max-w-[230px]">
+            + Add Profile Picture
+            <input
+              type="file"
+              id="profilePicture"
+              name="profilePicture"
+              className="hidden"
+              onChange={handleChange}
+              required
+            />
+          </label>
+          <div className="flex justify-end items-center w-full px-4">
+          <button
+              type="button"
+              onClick={handleNext}
+              className="float-right mt-3 block py-2 px-4 bg-maroon-700 text-yellow-300 font-bold text-lg rounded-lg text-center w-[80px]"
+           >
+              Next
+            </button>
+          </div>
+        </div>
+      
+        <div className="w-[400px] h-[550px] bg-maroon-700 rounded-sm shadow-md p-6 flex items-center">
+          <img src={signUpImage3} className="w-full max-h-full lg:max-h-[500px]" />
+        </div>
       </div>
+      
+      )}
+      {step === 3 && (
+        <div className="flex justify-between items-center min-w-full">
+          <div className="bg-gray-200 w-3/12 h-[550px] p-4 rounded-lg shadow-md">
+            <div className="flex items-center mb-8">
+            <i className="fas fa-check-square text-green-500 text-3xl mr-2"></i>
+              <p className="text-lg font-medium mr-2 ml-2">Upload Profile Picture</p>
+            </div>
+            <div className="flex items-center mb-8">
+            <i className="fas fa-check-square text-gray-400 text-3xl mr-2"></i>
+              <p className="text-lg font-medium mr-2 ml-2">Upload Birth Cetificate of the Child</p>
+            </div>
+            <div className="flex items-center mb-8">
+            <i className="fas fa-check-square text-gray-400 text-3xl mr-2"></i>
+              <p className="text-lg font-medium mr-2 ml-2">Upload Valid ID</p>
+            </div>
+            <div className="flex items-center mb-8">
+            <i className="fas fa-check-square text-gray-400 text-3xl mr-2"></i>
+              <p className="text-lg font-medium mr-2 ml-2">Other Informations</p>
+            </div>
+          </div>
+
+          <div className="flex-1 flex flex-col items-center justify-center">
+          <h2 className="mb-6 ml-4 text-center font-bold text-2xl text-maroon-700 bg-yellow-300 py-2 px-4 rounded w-[300px]">Parent Profile</h2>
+          <img src={preview.birthCertificate || signUpImage2} alt="Birth Certificate Preview" className="rounded-full w-80 h-72 mb-6 ml-5 object-cover" />
+          <label htmlFor="birthCertificate" className="cursor-pointer mb-5 ml-5 block py-2 px-4 bg-maroon-700 text-yellow-300 font-bold text-lg rounded-lg text-center max-w-[330px]">
+            + Add Birth Certificate of the Child
+            <input
+              type="file"
+              id="birthCertificate"
+              name="birthCertificate"
+              className="hidden"
+              onChange={handleChange}
+              required
+            />
+          </label>
+            <div className="flex justify-between items-center w-full px-4">
+            <button
+                type="button"
+                onClick={handlePrev}
+                className="mt-3 block py-2 px-4 bg-maroon-700 text-yellow-300 font-bold text-lg rounded-lg text-center w-[80px]"
+              >
+                Back
+              </button>
+              <button
+                type="button"
+                onClick={handleNext}
+                className="mt-3 block py-2 px-4 bg-maroon-700 text-yellow-300 font-bold text-lg rounded-lg text-center w-[80px]"
+              >
+                Next
+              </button>
+              </div>
+          </div>
+
+          <div className="w-[400px] h-[550px] bg-maroon-700 rounded-sm shadow-md p-6 flex items-center">
+            <img src={signUpImage3} className="w-full max-h-full lg:max-h-[500px]" />
+          </div>
+        </div>
+      )}
+      {step === 4 && (
+        <div className="flex justify-between items-center min-w-full">
+          <div className="bg-gray-200 w-3/12 h-[550px] p-4 rounded-lg shadow-md">
+            <div className="flex items-center mb-8">
+            <i className="fas fa-check-square text-green-500 text-3xl mr-2"></i>
+              <p className="text-lg font-medium mr-2 ml-2">Upload Profile Picture</p>
+            </div>
+            <div className="flex items-center mb-8">
+            <i className="fas fa-check-square text-green-500 text-3xl mr-2"></i>
+              <p className="text-lg font-medium mr-2 ml-2">Upload Birth Cetificate of the Child</p>
+            </div>
+            <div className="flex items-center mb-8">
+            <i className="fas fa-check-square text-gray-400 text-3xl mr-2"></i>
+              <p className="text-lg font-medium mr-2 ml-2">Upload Valid ID</p>
+            </div>
+            <div className="flex items-center mb-8">
+            <i className="fas fa-check-square text-gray-400 text-3xl mr-2"></i>
+              <p className="text-lg font-medium mr-2 ml-2">Other Informations</p>
+            </div>
+          </div>
+
+        <div className="flex-1 flex flex-col items-center justify-center">
+            <h2 className="mb-6 ml-4 text-center font-bold text-2xl text-maroon-700 bg-yellow-300 py-2 px-4 rounded w-[300px]">Parent Profile</h2>
+            <img src={preview.id || signUpImage2} alt="Valid ID Preview" className="rounded-full w-80 h-72 mb-6 ml-5 object-cover" />
+            <label htmlFor="id" className="cursor-pointer mb-5 ml-5 block py-2 px-4 bg-maroon-700 text-yellow-300 font-bold text-lg rounded-lg text-center max-w-[230px]">
+              + Add Valid ID
+              <input
+                type="file"
+                id="id"
+                name="id"
+                className="hidden"
+                onChange={handleChange}  
+                required
+              />
+            </label>
+            <div className="flex justify-between items-center w-full px-4">
+            <button
+                type="button"
+                onClick={handlePrev}
+                className="mt-3 block py-2 px-4 bg-maroon-700 text-yellow-300 font-bold text-lg rounded-lg text-center w-[80px]"
+              >
+                Back
+              </button>
+              <button
+                type="button"
+                onClick={handleNext}
+                className="mt-3 block py-2 px-4 bg-maroon-700 text-yellow-300 font-bold text-lg rounded-lg text-center w-[80px]"
+              >
+                Next
+              </button>
+              </div>
+          </div>
+
+          <div className="w-[400px] h-[550px] bg-maroon-700 rounded-sm shadow-md p-6 flex items-center">
+            <img src={signUpImage3} className="w-full max-h-full lg:max-h-[500px]" />
+          </div>
+        </div>
+      )}
+     {step === 5 && (
+        <div className="flex items-center min-w-full">
+        <div className="bg-gray-200 w-3/12 h-[550px] p-4 rounded-lg shadow-md">
+          <div className="flex items-center mb-8">
+            <i className="fas fa-check-square text-green-500 text-3xl mr-2"></i>
+            <p className="text-lg font-medium mr-2 ml-2">Upload Profile Picture</p>
+          </div>
+          <div className="flex items-center mb-8">
+            <i className="fas fa-check-square text-green-500 text-3xl mr-2"></i>
+            <p className="text-lg font-medium mr-2 ml-2">Upload Birth Cetificate of the Child</p>
+          </div>
+          <div className="flex items-center mb-8">
+            <i className="fas fa-check-square text-green-500 text-3xl mr-2"></i>
+            <p className="text-lg font-medium mr-2 ml-2">Upload Valid ID</p>
+          </div>
+          <div className="flex items-center mb-8">
+            <i className="fas fa-check-square text-gray-400 text-3xl mr-2"></i>
+            <p className="text-lg font-medium mr-2 ml-2">Other Informations</p>
+          </div>
+        </div>
+      
+        <div className="flex-1 flex flex-col items-center justify-center">
+          <h2 className="mb-12 ml-4 text-center font-bold text-2xl text-maroon-700 bg-yellow-300 py-2 px-4 rounded w-[300px]">
+            Parent Profile
+          </h2>
+          <div className="mb-20 mr-40">
+            <p className="text-lg font-medium mr-2 mb-1">Enter your House Number:</p>
+            <input
+              type="number"
+              className="mb-4 font-semi text-1xl py-2 px-4 border border-black rounded-lg w-[300px]"
+              name="houseNumber"
+              value={formData.houseNumber}
+              onChange={handleChange}
+              placeholder="Enter House Number"
+              min="0"
+              step="1"
+              required
+            />
+            
+            <p className="text-lg font-medium mr-2 mb-1">Enter your Contact Number:</p>
+            <input
+              type="number"
+              className="mb-4 font-semi text-1xl py-2 px-4 border border-black rounded-lg w-[300px]"
+              name="contactNumber"
+              value={formData.contactNumber}
+              onChange={handleChange}
+              placeholder="Enter Contact Number"
+              min="0"
+              step="1"
+              required
+            />
+      
+            <p className="text-lg font-medium mr-2 mb-1">Select your Campus Address:</p>
+            <select
+              className="mb-4 font-semi text-1xl py-2 px-4 border border-black rounded-lg w-[300px]"
+              name="campusAddress"
+              value={formData.campusAddress}
+              onChange={handleChange}
+            >
+              <option value="">Select Address/Street</option>
+              <option value="Dimalna 2">Dimalna 2</option>
+              <option value="Barrio Salam">Barrio Salam</option>
+              <option value="3rd Street">3rd Street</option>
+              {/* Add more options as needed */}
+            </select>
+          </div>
+      
+          <div className="flex justify-between items-center w-full px-4">
+            <button
+              type="button"
+              onClick={handlePrev}
+              className="mt-3 block py-2 px-4 bg-maroon-700 text-yellow-300 font-bold text-lg rounded-lg text-center w-[80px]"
+            >
+              Back
+            </button>
+            <button
+              type="button"
+              onClick={handleSubmit}
+              className="mt-3 block py-2 px-4 bg-maroon-700 text-yellow-300 font-bold text-lg rounded-lg text-center w-[100px]"
+            >
+              Submit
+            </button>
+          </div>
+        </div>
+      
+        <div className="w-[400px] h-[550px] bg-maroon-700 p-6 flex items-center justify-center">
+          <img src={signUpImage3} className="w-full max-h-full lg:max-h-[500px]" />
+        </div>
+      </div>
+      )}
+           
     </div>
   );
 };

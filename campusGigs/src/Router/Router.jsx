@@ -7,11 +7,24 @@ import SignUp from "../Pages/SignUp";
 import Job from "../Pages/Job";
 import Contact from "../Pages/Contact";
 import EmployerSignUp from "../components/employerSignUp";
-import ParentSignUp from "../components/ParentSignUp";
 import ApplicantSignUp from "../components/ApplicantSignUp";
 import EmployerDb from "../components/EmployerDb";
 import EmployerMyAcc from "../components/EmployerMyAcc";
 import EmployerAppList from "../components/EmployerAppList";
+import EmployerJobPost from "../components/EmployerJobPost";
+import EmployerStaffs from "../components/EmployerStaffs";
+import EmployerRegisterSuccess from "../components/EmployerRegisterSuccess";
+import ApplicantDashboard from "../components/ApplicantDashboard";
+import ApplicantsMyAcc from "../components/ApplicantsMyAcc";
+import AdminDashboard from "../components/AdminDashboard";
+import ParentSignUp from "../components/ParentSignUp";
+import ParentDashboard from "../components/ParentDashboard";
+import ParentMyAcc from "../components/ParentMyAcc";
+import ParentTutors from "../components/ParentTutors";
+import ParentAppList from "../components/ParentAppList";
+import ParentPostTutor from "../components/ParentPostTutor";
+import AdminManageJob from "../components/AdminManageJob";
+
 
 const router = createBrowserRouter([
     {
@@ -25,11 +38,24 @@ const router = createBrowserRouter([
         {path: "Job", element: <Job />},
         {path: "Contact", element: <Contact />},
         {path: "employerSignUp", element: <EmployerSignUp />},
-        {path: "parentSignUp", element: <ParentSignUp />},
         {path: "applicantSignUp", element: <ApplicantSignUp />},
         {path: "employerDb", element: <EmployerDb />},
         {path: "employerMyAcc", element: <EmployerMyAcc />},
         {path: "employerAppList", element: <EmployerAppList />},
+        {path: "employerJobPost", element: <EmployerJobPost />},
+        {path: "employerStaffs", element: <EmployerStaffs />},
+        {path: "employerRegisterSuccess", element: <EmployerRegisterSuccess />},
+        {path: "applicantDashboard", element: <ApplicantDashboard />},
+        {path: "applicantsMyAcc", element: <ApplicantsMyAcc />},
+        {path: "adminDashboard", element: <AdminDashboard />},
+        {path: "parentSignUp", element: <ParentSignUp />},
+        {path: "parentDashboard", element: <ParentDashboard />},
+        {path: "parentMyAcc", element: <ParentMyAcc />},
+        {path: "parentTutors", element: <ParentTutors />},
+        {path: "parentAppList", element: <ParentAppList />},
+        {path: "parentPostTutor", element: <ParentPostTutor />},
+        {path: "adminManageJob", element: <AdminManageJob />},
+        
 
       ]
     },

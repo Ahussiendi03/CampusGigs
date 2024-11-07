@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import axios from 'axios';
-import { useNavigate } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import loginImage from '../images/Login_Page_Website_UI_Prototype__6_-removebg-preview.png';
 
 const SignIn = () => {
@@ -16,13 +16,22 @@ const SignIn = () => {
       .then(result => {
         console.log(result);
         if (result.data.status === "Success") {
-          const role = result.data.role; // Assuming role is returned in the response
+          const { role, employerId } = result.data; // Assuming employerId is returned in the response
+          
+          // Store the employerId in localStorage
+          if (employerId) {
+            localStorage.setItem('employerId', employerId);
+          }
+  
+          // Navigate based on the user's role
           if (role === "employer") {
             navigate('/employerDb');
           } else if (role === "parent") {
-            navigate('/parentDb');
+            navigate('/parentDashboard');
           } else if (role === "applicant") {
-            navigate('/applicantDb');
+            navigate('/applicantDashboard');
+          } else if (role === "admin") {
+            navigate('/adminDashboard');
           } else {
             navigate('/');
           }
@@ -32,6 +41,7 @@ const SignIn = () => {
       })
       .catch(err => console.log(err));
   };
+  
 
   return (
     <main>
@@ -73,7 +83,7 @@ const SignIn = () => {
                 <button type="submit" className="mt-3 px-4 py-2 bg-yellow-300 text-maroon-700 font-bold rounded-lg">Sign In</button>
               </div>
             </form>
-            <p className="mt-4 text-white text-center">Don't have an account? <a href="sign-up.html" className="text-yellow-400">Sign Up</a></p>
+            <p className="mt-4 text-white text-center">Don't have an account? <Link to="/sign-up" className="text-yellow-400">Sign Up</Link></p>
           </div>
         </div>
       </div>
