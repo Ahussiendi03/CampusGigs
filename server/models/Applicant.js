@@ -30,7 +30,7 @@ const ApplicantSchema = new mongoose.Schema({
         type: String, // This will store the path or URL to the uploaded School ID
         required: true
     },
-    address: {
+    streetAddress: {
         type: String,
         required: true
     },

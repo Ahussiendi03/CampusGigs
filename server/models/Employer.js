@@ -30,6 +30,18 @@ const EmployerSchema = new mongoose.Schema({
         type: String, // This will store the path or URL to the uploaded ID
         required: true
     },
+    contactNumber: {
+        type: String,
+        required: true
+    },
+    businessName: {
+        type: String,
+        require: true
+    },
+    businessImage: {
+        type: String,
+        require: true
+    },
     streetAddress: {
         type: String,
         required: true

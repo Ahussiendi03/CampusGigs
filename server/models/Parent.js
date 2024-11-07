@@ -30,6 +30,14 @@ const ParentSchema = new mongoose.Schema({
         type: String, // This will store the path or URL to the uploaded birth certificate
         required: true
     },
+    houseNumber: {
+        type: String,
+        required: true
+    },
+    contactNumber: {
+        type: String,
+        required: true
+    },
     campusAddress: {
         type: String,
         required: true
