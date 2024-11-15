@@ -3,9 +3,15 @@ const express = require('express');
 const router = express.Router();
 const JobPost = require('../models/JobPost');
 const Employer = require('../models/Employer');
+const ApplicationModel = require('../models/Application'); // Adjust path as needed
+const ApplicantModel = require('../models/Applicant'); // Adjust path as needed
+const { applyForJob } = require('../controllers/applicationController');
 
 // Create a new job post (Pending by default)
 // Create a new job post (Pending by default)
+
+router.post('/apply', applyForJob);
+
 
 router.get('/', async (req, res) => {
   try {
@@ -106,6 +112,20 @@ router.put('/status/:id', async (req, res) => {
   }
 });
 
+
+router.get('/pending-applicants/:employerId', async (req, res) => {
+  const { employerId } = req.params;
+  try {
+    const applications = await ApplicationModel.find({
+      employerId: employerId,
+      status: 'pending'
+    }).populate('applicantId'); // Populates all applicant fields
+
+    res.status(200).json(applications);
+  } catch (error) {
+    res.status(500).json({ message: 'Error fetching applicants', error });
+  }
+});
 
 
 

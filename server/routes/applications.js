@@ -27,4 +27,19 @@ router.post('/apply', async (req, res) => {
   }
 });
 
+// routes/applications.js
+router.get('/pending-applicants/:employerId', async (req, res) => {
+  try {
+    const { employerId } = req.params;
+    const pendingApplications = await Application.find({ employerId, status: 'pending' })
+      .populate('applicantId', 'firstName lastName email contactNumber'); // Assuming `applicantId` links to Applicant
+
+    res.status(200).json(pendingApplications);
+  } catch (error) {
+    console.error('Error fetching pending applications:', error);
+    res.status(500).json({ message: 'Internal Server Error' });
+  }
+});
+
+
 module.exports = router;

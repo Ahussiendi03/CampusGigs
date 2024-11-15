@@ -7,8 +7,8 @@ const ApplicantDashboard = () => {
   const [jobPosts, setJobPosts] = useState([]);
   const [applicantId, setApplicantId] = useState(null);
 
-  // Fetch approved job posts on component mount
   useEffect(() => {
+    // Fetch approved job posts on component mount
     const fetchApprovedJobPosts = async () => {
       try {
         const response = await axios.get('http://localhost:5000/api/jobPosts');
@@ -18,21 +18,52 @@ const ApplicantDashboard = () => {
       }
     };
 
+    // Retrieve applicantId from localStorage
+    const applicantId = localStorage.getItem('applicantId');
+    if (applicantId) {
+      setApplicantId(applicantId);
+    } else {
+      console.error('Applicant ID is missing. Ensure the user is logged in.');
+    }
+
     fetchApprovedJobPosts();
   }, []);
 
-  const handleApply = async (jobId) => {
-    try {
-      const response = await axios.post('http://localhost:5000/api/applications/apply', {
-        jobId,
-        applicantId, // ensure applicantId is being passed
-      });
-      console.log('Application successful:', response.data);
-    } catch (error) {
-      console.error('Error applying to job:', error);
+  const handleApply = async (jobId, employerId) => {
+    if (!applicantId) {
+        console.error('Applicant ID is missing. Ensure the user is logged in.');
+        return;
     }
-  };
-  
+
+    // Debugging output to ensure all values are present
+    console.log('Applying to job with the following data:', { jobId, applicantId, employerId });
+
+    // Check if jobId, applicantId, or employerId is missing
+    if (!jobId) {
+        console.error("Job ID is missing.");
+        return;
+    }
+    if (!employerId) {
+        console.error("Employer ID is missing.");
+        return;
+    }
+
+    try {
+        const response = await axios.post('http://localhost:5000/api/applications/apply', {
+            jobId,
+            applicantId,
+            employerId,
+        });
+        console.log('Application successful:', response.data);
+    } catch (error) {
+        if (error.response) {
+            console.error('Error applying to job:', error.response.data);
+        } else {
+            console.error('Error applying to job:', error.message);
+        }
+    }
+};
+
 
   return (
     <div className="flex justify-center">
@@ -76,45 +107,42 @@ const ApplicantDashboard = () => {
                 <th className="py-2 px-4 border-b">Address</th>
                 <th className="py-2 px-4 border-b">Job Position</th>
                 <th className="py-2 px-4 border-b">Schedule</th>
+                <th className="py-2 px-4 border-b">Rate</th>
                 <th className="py-2 px-4 border-b">Action</th>
               </tr>
             </thead>
             <tbody>
-                {jobPosts.length > 0 ? (
-                  jobPosts.map((job) => (
-                    <tr key={job._id} className="bg-gray-100">
-                      <td className="py-2 px-4 border-b flex items-center">
-                        {job.employerId.businessImage && (
-                          <img
-                            src={`http://localhost:5000/${job.employerId.businessImage}`}
-                            alt="Business Logo"
-                            className="w-10 h-10 rounded-full mr-2"
-                          />
-                        )}
-                        <span className="font-medium">{job.employerId.businessName}</span>
-                      </td>
-                      <td className="py-2 px-4 border-b">{job.address}</td>
-                      <td className="py-2 px-4 border-b">{job.position}</td>
-                      <td className="py-2 px-4 border-b">{job.schedule}</td>
-                      <td className="py-2 px-4 border-b">
-                      <button
-    className="bg-blue-500 text-white py-1 px-3 rounded hover:bg-blue-600"
-    onClick={() => handleApply(job._id)}
-  >
-    Apply
-  </button>
-</td>
-  
-                    </tr>
-                  ))
-                ) : (
-                  <tr>
-                    <td colSpan="5" className="text-center py-4">
-                      No approved job posts available.
+              {jobPosts.length > 0 ? (
+                jobPosts.map((job) => (
+                  <tr key={job._id} className="bg-gray-100">
+                    <td className="py-2 px-4 border-b flex items-center">
+                      {job.employerId.businessImage && (
+                        <img
+                          src={`http://localhost:5000/${job.employerId.businessImage}`}
+                          alt="Business Logo"
+                          className="w-10 h-10 rounded-full mr-2"
+                        />
+                      )}
+                      <span className="font-medium">{job.employerId.businessName}</span>
+                    </td>
+                    <td className="py-2 px-4 border-b">{job.address}</td>
+                    <td className="py-2 px-4 border-b">{job.position}</td>
+                    <td className="py-2 px-4 border-b">{job.schedule}</td>
+                    <td className="py-2 px-4 border-b">{job.salaryRate}</td>
+                    <td className="py-2 px-4 border-b">
+                    <button className="bg-blue-500 text-white py-1 px-3 rounded hover:bg-blue-600" onClick={() => handleApply(job._id, job.employerId._id)}>Apply</button>
+
                     </td>
                   </tr>
-                )}
-              </tbody>
+                ))
+              ) : (
+                <tr>
+                  <td colSpan="5" className="text-center py-4">
+                    No approved job posts available.
+                  </td>
+                </tr>
+              )}
+            </tbody>
           </table>
         </div>
       </div>

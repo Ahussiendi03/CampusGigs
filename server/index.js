@@ -15,6 +15,7 @@ const AdminModel = require('./models/Admin');
 const jobPostRoutes = require('./routes/jobPosts');
 const employerRoutes = require('./routes/jobPosts');
 const applicationsRouter = require('./routes/applications');
+const applicantRoutes = require('./routes/applicantRoutes');
 
 
 const app = express();
@@ -45,6 +46,8 @@ const authenticate = (req, res, next) => {
 app.use('/api/jobposts', jobPostRoutes);
 app.use('/api/employers', employerRoutes);
 app.use('/api/applications', applicationsRouter);
+app.use('/api', applicantRoutes);
+
 
 
 
@@ -98,11 +101,11 @@ app.post("/sign-in", (req, res) => {
                 bcrypt.compare(password, applicant.password, (err, response) => {
                     if (response) {
                         const token = jwt.sign(
-                            { email: applicant.email, role: applicant.role },
+                            { email: applicant.email, role: applicant.role, applicantId: applicant._id },
                             "jwt-secret-key",
                         );
                         res.cookie("token", token);
-                        res.json({ status: "Success", role: applicant.role });
+                        res.json({ status: "Success", role: applicant.role, applicantId: applicant._id });
                     } else {
                         res.json({ status: "Error", message: "The password is incorrect" });
                     }
