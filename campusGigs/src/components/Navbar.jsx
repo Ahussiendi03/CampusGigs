@@ -8,31 +8,29 @@ const Navbar = () => {
     const [isMenuOpen, setIsMenuOpen] = useState(false);
     const [isSignedIn, setIsSignedIn] = useState(false);
     const [authChecked, setAuthChecked] = useState(false);
-
     const navigate = useNavigate();
 
-  const handleLogout = async () => {
-    const confirmLogout = window.confirm('Are you sure you want to log out?');
-    
-    if (confirmLogout) {
-      try {
-        const response = await fetch('http://localhost:5000/logout', {
-          method: 'POST',
-          credentials: 'include',
-        });
+    const handleLogout = async () => {
+        const confirmLogout = window.confirm('Are you sure you want to log out?');
+        
+        if (confirmLogout) {
+            try {
+                const response = await fetch('http://localhost:5000/logout', {
+                    method: 'POST',
+                    credentials: 'include',
+                });
 
-        if (response.ok) {
-          navigate('/sign-in'); // Redirect to login page after logout
-        } else {
-          console.error('Logout failed');
+                if (response.ok) {
+                    navigate('/sign-in'); // Redirect to login page after logout
+                } else {
+                    console.error('Logout failed');
+                }
+            } catch (error) {
+                console.error('An error occurred during logout:', error);
+            }
         }
-      } catch (error) {
-        console.error('An error occurred during logout:', error);
-      }
-    }
-  };
+    };
 
-    // Function to check for token
     const checkForToken = () => {
         const token = Cookies.get("token");
         setIsSignedIn(!!token);
@@ -40,34 +38,40 @@ const Navbar = () => {
     };
 
     useEffect(() => {
-        checkForToken(); // Initial check when the component mounts
-
-        const intervalId = setInterval(() => {
-            checkForToken(); // Re-check periodically for token
-        }, 1000); // Adjust the interval as needed
-
-        return () => clearInterval(intervalId); // Cleanup interval on unmount
+        checkForToken();
+        const intervalId = setInterval(checkForToken, 1000);
+        return () => clearInterval(intervalId);
     }, []);
 
     const handleMenuToggle = () => {
         setIsMenuOpen(!isMenuOpen);
     };
 
+    const handleScrollToSection = (e, sectionId) => {
+        e.preventDefault();
+        const section = document.querySelector(sectionId);
+        if (section) {
+            window.scrollTo({
+                top: section.offsetTop - 80, // Adjusted for navbar height
+                behavior: "smooth"
+            });
+        }
+        setIsMenuOpen(false); // Close mobile menu on click
+    };
+
     const navItems = [
         { path: "/", title: "Home", fontWeight: "font-bold" },
-        { path: "/About", title: "About Us", fontWeight: "font-semibold" },
-        { path: "/Job", title: "Job", fontWeight: "font-semibold" },
-        { path: "/Contact", title: "Contact", fontWeight: "font-semibold" },
+        { id: "#about-us", title: "About Us" },
+        { id: "#contact-us", title: "Contact Us" },
+        { id: "#privacy-policy", title: "Privacy Policy" },
     ];
 
-    if (!authChecked) {
-        return null; // Optionally, show a loader or return nothing while auth status is being checked
-    }
+    if (!authChecked) return null;
 
     return (
         <header className="bg-gold">
             <nav className="flex items-center justify-between p-4">
-                <a href='/' className="flex items-center gap-2 text-2xl nav-link">
+                <a href="/" className="flex items-center gap-2 text-2xl nav-link">
                     <img
                         className="w-16 h-16 rounded-full object-cover"
                         src={logo}
@@ -76,10 +80,18 @@ const Navbar = () => {
                     <span className="text-4xl font-bold text-maroon-700 ml-1">MSU CampusGigs</span>
                 </a>
                 <div className="hidden md:flex gap-12">
-                    {!isSignedIn && (
-                        <ul className="flex gap-12">
-                            {navItems.map(({ path, title, fontWeight }) => (
-                                <li key={path} className="text-lg text-gray-700">
+                    <ul className="flex gap-12">
+                        {!isSignedIn && navItems.map(({ path, title, id, fontWeight }) => (
+                            <li key={path || id} className="text-lg text-gray-700">
+                                {id ? (
+                                    <a
+                                        href={id}
+                                        onClick={(e) => handleScrollToSection(e, id)}
+                                        className={`hover:text-maroon-700 ${fontWeight}`}
+                                    >
+                                        {title}
+                                    </a>
+                                ) : (
                                     <NavLink
                                         to={path}
                                         className={`hover:text-maroon-700 ${fontWeight}`}
@@ -87,10 +99,10 @@ const Navbar = () => {
                                     >
                                         {title}
                                     </NavLink>
-                                </li>
-                            ))}
-                        </ul>
-                    )}
+                                )}
+                            </li>
+                        ))}
+                    </ul>
                     <div className="text-lg font-medium space-x-5 hidden lg:block">
                         {!isSignedIn ? (
                             <>
@@ -114,16 +126,26 @@ const Navbar = () => {
             {isMenuOpen && (
                 <div className="md:hidden bg-gold">
                     <ul className="flex flex-col items-end gap-4 py-4 pr-4">
-                        {!isSignedIn && navItems.map(({ path, title, fontWeight }) => (
-                            <li key={path} className="text-lg text-gray-700">
-                                <NavLink
-                                    to={path}
-                                    className={`hover:text-maroon-700 ${fontWeight}`}
-                                    activeClassName="active"
-                                    onClick={handleMenuToggle}
-                                >
-                                    {title}
-                                </NavLink>
+                        {!isSignedIn && navItems.map(({ path, title, id, fontWeight }) => (
+                            <li key={path || id} className="text-lg text-gray-700">
+                                {id ? (
+                                    <a
+                                        href={id}
+                                        onClick={(e) => handleScrollToSection(e, id)}
+                                        className={`hover:text-maroon-700 ${fontWeight}`}
+                                    >
+                                        {title}
+                                    </a>
+                                ) : (
+                                    <NavLink
+                                        to={path}
+                                        className={`hover:text-maroon-700 ${fontWeight}`}
+                                        activeClassName="active"
+                                        onClick={handleMenuToggle}
+                                    >
+                                        {title}
+                                    </NavLink>
+                                )}
                             </li>
                         ))}
                         <div className="text-lg font-medium space-x-5">

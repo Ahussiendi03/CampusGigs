@@ -7,19 +7,40 @@ const ApplicantsMyAcc = () => {
   return (
     <div className="flex justify-center relative">
       {/* Sidebar */}
-      <div className="bg-gray-200 w-[280px] h-[950px] rounded-lg p-4 shadow-md">
+      <div className="bg-gray-200 w-[280px] h-[950px] p-4 shadow-md">
         <div className="flex items-center mb-8">
           <i className="fas fa-home text-lg mr-2"></i>
-          <Link to ="/applicantDashboard" className="text-lg font-medium mr-2 ml-2">Dashboard</Link>
+          <Link to="/applicantDashboard" className="text-lg font-medium mr-2 ml-2">
+            Dashboard
+          </Link>
         </div>
         <div className="flex items-center mb-8">
           <i className="fas fa-user text-lg mr-2"></i>
-          <Link to ="" className="text-lg font-medium mr-2 ml-2">My Account </Link>
+          <Link to="/ApplicantsMyAcc" className="text-lg font-medium mr-2 ml-2">
+            My Account
+          </Link>
         </div>
         <div className="flex items-center mb-8">
-         <i className="fas fa-comments text-lg mr-2"></i>
-        <Link to ="/ApplicantsFeedBacks" className="text-lg font-medium ml-2">Feedbacks</Link>
+          <i className="fas fa-briefcase text-lg mr-2"></i>
+          <Link to="/ApplicantsJobApps" className="text-lg font-medium mr-2 ml-2">Job Applications</Link>
+          </div>
+          <div className="flex items-center mb-8">
+          <i className="fas fa-briefcase text-lg mr-2"></i>
+          <Link to="/ApplicantsCurrentJob" className="text-lg font-medium mr-2 ml-2">Current Job</Link>
+          </div>
+        <div className="flex items-center mb-8">
+          <i className="fa-solid fa-chart-simple text-lg mr-2"></i>
+          <Link to="/ApplicantsLevelingSystem" className="text-lg font-medium mr-2 ml-2">
+            Level
+          </Link>
         </div>
+        <div className="flex items-center mb-8">
+          <i className="fas fa-comments text-lg mr-2"></i>
+          <Link to="/applicantsFeedback" className="text-lg font-medium ml-2">
+            Feedbacks
+          </Link>
+        </div>
+       
       </div>
 
       {/* Main Content */}

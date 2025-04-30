@@ -127,7 +127,7 @@ const EmployerMyAcc = () => {
         </div>
         <div className="flex items-center mb-8">
           <i className="fas fa-comments text-lg mr-2"></i>
-          <p className="text-lg font-medium ml-2">Feedbacks</p>
+          <Link to="/EmployerFeedBacks" className="text-lg font-medium mr-2 ml-2">Feedbacks</Link>
         </div>
       </div>
 

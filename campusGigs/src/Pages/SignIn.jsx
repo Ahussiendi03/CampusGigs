@@ -15,17 +15,24 @@ const SignIn = () => {
     try {
       const result = await axios.post('http://localhost:5000/sign-in', { email, password });
       console.log(result);
-
+  
       if (result.data.status === "Success") {
-        const { role, employerId, applicantId } = result.data;
+        const { role, employerId, applicantId, token } = result.data;
+  
+        // Store the JWT token in localStorage
+        console.log('Token received:', token);
 
-        // Store ID in localStorage or cookies based on role
+        if (token) {
+          localStorage.setItem('token', token); // Save the token in localStorage
+        }
+  
+        // Store ID in localStorage based on role
         if (role === "employer" && employerId) {
           localStorage.setItem('employerId', employerId);
         } else if (role === "applicant" && applicantId) {
           localStorage.setItem('applicantId', applicantId); 
         }
-
+  
         // Navigate based on role
         if (role === "employer") {
           navigate('/employerDb');
@@ -46,6 +53,7 @@ const SignIn = () => {
       alert('An error occurred while signing in. Please check your credentials or try again later.');
     }
   };
+  
 
   return (
     <main>

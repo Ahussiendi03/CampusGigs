@@ -22,21 +22,42 @@ const EmployerAppList = () => {
     fetchPendingApplicants();
   }, [employerId]);
 
-  const handleViewProfile = async (applicantId) => {
+  const handleViewProfile = async (id) => {
     try {
-      const response = await axios.get(`http://localhost:5000/api/applicant-profile/${applicantId}`);
-      console.log('Applicant profile data:', response.data); // Log the response to check the data
-      setSelectedApplicant(response.data);
+      const response = await axios.get(`http://localhost:5000/api/applicant-profile/${id}`);
+      setSelectedApplicant(response.data); // Set the fetched profile data
     } catch (error) {
-      console.error('Error fetching applicant profile:', error);
+      console.error('Error fetching applicant profile:', error.response?.data || error.message);
     }
   };
   
 
-  const handleApprove = (applicantId) => {
-    // Add approve logic here
-    console.log(`Applicant with ID ${applicantId} approved`);
+  const handleApprove = async (applicantId) => {
+    try {
+      const response = await axios.put(`http://localhost:5000/api/approve/${applicantId}`);
+      console.log('Application approved:', response.data);
+    } catch (error) {
+      console.error('Error approving application:', error.response?.data || error.message);
+    }
   };
+  
+  
+  const handleReject = async (applicantId) => {
+    try {
+      const response = await axios.put(
+        `http://localhost:5000/api/reject/${applicantId}`
+      );
+      alert(response.data.message);
+      // Refresh the list of pending applicants
+      setPendingApplicants((prev) =>
+        prev.filter((applicant) => applicant.applicantId._id !== applicantId)
+      );
+    } catch (error) {
+      console.error('Error rejecting application:', error);
+      alert('Failed to reject the application.');
+    }
+  };
+  
 
   const handleCloseModal = () => {
     setSelectedApplicant(null);
@@ -68,7 +89,7 @@ const EmployerAppList = () => {
         </div>
         <div className="flex items-center mb-8">
           <i className="fas fa-comments text-lg mr-2"></i>
-          <p className="text-lg font-medium ml-2">Feedbacks</p>
+          <Link to="/EmployerFeedBacks" className="text-lg font-medium mr-2 ml-2">Feedbacks</Link>
         </div>
       </div>
 
@@ -80,41 +101,61 @@ const EmployerAppList = () => {
           </div>
 
           <table className="table-auto w-full bg-white shadow-md rounded-lg overflow-hidden">
-            <thead className="bg-yellow-300">
-              <tr>
-                <th className="px-4 py-2 text-left">FIRST NAME</th>
-                <th className="px-4 py-2 text-left">LAST NAME</th>
-                <th className="px-4 py-2 text-left">EMAIL</th>
-                <th className="px-4 py-2 text-left">VIEW PROFILE</th>
-                <th className="px-4 py-2 text-left">APPROVE</th>
-              </tr>
-            </thead>
-            <tbody>
-              {pendingApplicants.map((applicant) => (
-                <tr key={applicant._id} className="hover:bg-gray-100">
-                  <td className="border px-4 py-2">{applicant.applicantId.firstName}</td>
-                  <td className="border px-4 py-2">{applicant.applicantId.lastName}</td>
-                  <td className="border px-4 py-2">{applicant.applicantId.email}</td>
-                  <td className="border px-4 py-2 text-center">
-                    <button
-                      className="text-blue-500 font-semibold"
-                      onClick={() => handleViewProfile(applicant.applicantId._id)}
-                    >
-                      View Profile
-                    </button>
-                  </td>
-                  <td className="border px-4 py-2 text-center">
-                    <button
-                      className="text-green-500 font-semibold"
-                      onClick={() => handleApprove(applicant.applicantId._id)}
-                    >
-                      Approve
-                    </button>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
+  <thead className="bg-yellow-300">
+    <tr>
+      <th className="px-4 py-2 text-left">FIRST NAME</th>
+      <th className="px-4 py-2 text-left">LAST NAME</th>
+      <th className="px-4 py-2 text-left">EMAIL</th>
+      <th className="px-4 py-2 text-left">JOB APPLIED</th>
+      <th className="px-4 py-2 text-left">VIEW PROFILE</th>
+      <th className="px-4 py-2 text-left">ACTION</th>
+    </tr>
+  </thead>
+  <tbody>
+    {pendingApplicants.map((applicant) => (
+      <tr key={applicant._id} className="hover:bg-gray-100">
+        <td className="border px-4 py-2">{applicant.applicantId.firstName}</td>
+        <td className="border px-4 py-2">{applicant.applicantId.lastName}</td>
+        <td className="border px-4 py-2">{applicant.applicantId.email}</td>
+        <td className="border px-4 py-2">
+          {applicant.jobId ? (
+            <>
+              <p><strong>Position:</strong> {applicant.jobId.position}</p>
+              <p><strong>Schedule:</strong> {applicant.jobId.schedule}</p>
+              <p><strong>Salary:</strong> {applicant.jobId.salaryRate}</p>
+            </>
+          ) : (
+            <p>N/A</p>
+          )}
+        </td>
+        <td className="border px-4 py-2 text-center">
+          <button
+            className="text-blue-500 font-semibold"
+            onClick={() => handleViewProfile(applicant.applicantId._id)}
+          >
+            View Profile
+          </button>
+        </td>
+        <td className="border px-4 py-2 text-center">
+  <button
+    className="text-green-500 font-semibold mr-2"
+    onClick={() => handleApprove(applicant.applicantId._id)}
+  >
+    Approve
+  </button>
+  <button
+    className="text-red-500 font-semibold"
+    onClick={() => handleReject(applicant.applicantId._id)}
+  >
+    Reject
+  </button>
+</td>
+
+      </tr>
+    ))}
+  </tbody>
+</table>
+
         </div>
       </div>
 

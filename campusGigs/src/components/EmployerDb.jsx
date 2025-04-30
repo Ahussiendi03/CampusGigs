@@ -1,14 +1,20 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
+import axios from 'axios';
 import '@fortawesome/fontawesome-free/css/all.min.css';
 
 const EmployerDb = () => {
-
   const navigate = useNavigate();
+
+  const [pendingApplicants, setPendingApplicants] = useState([]);
+  const [approvedApplicants, setApprovedApplicants] = useState([]);
+  const [jobPosts, setJobPosts] = useState([]);
+
+  const employerId = localStorage.getItem('employerId');
 
   const handleLogout = async () => {
     const confirmLogout = window.confirm('Are you sure you want to log out?');
-    
+
     if (confirmLogout) {
       try {
         const response = await fetch('http://localhost:5000/logout', {
@@ -17,7 +23,7 @@ const EmployerDb = () => {
         });
 
         if (response.ok) {
-          navigate('/sign-in'); // Redirect to login page after logout
+          navigate('/sign-in');
         } else {
           console.error('Logout failed');
         }
@@ -26,6 +32,29 @@ const EmployerDb = () => {
       }
     }
   };
+
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const pendingRes = await axios.get(`http://localhost:5000/api/applications/pending-applicants/${employerId}`);
+        setPendingApplicants(pendingRes.data);
+
+        const approvedRes = await axios.get(`http://localhost:5000/api/applications/approved-applicants/${employerId}`);
+        setApprovedApplicants(approvedRes.data);
+
+        const jobRes = await axios.get('http://localhost:5000/api/jobposts/employer', {
+          params: { employerId, status: 'approved' },
+        });
+        setJobPosts(jobRes.data);
+      } catch (error) {
+        console.error('Dashboard data fetch error:', error);
+      }
+    };
+
+    if (employerId) {
+      fetchData();
+    }
+  }, [employerId]);
 
   return (
     <div className="flex justify-center">
@@ -70,56 +99,101 @@ const EmployerDb = () => {
             <i className="fas fa-search absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-600"></i>
           </div>
         </div>
+
         <div className="flex justify-start mb-4 w-full">
           <div className="flex items-center space-x-16 p-4">
             <div className="flex items-center space-x-4">
               <i className="fas fa-users text-maroon-700 text-6xl"></i>
               <div>
                 <p className="text-lg font-medium text-maroon-700">Applicants</p>
-                <p className="text-xl font-bold">1258</p>
+                <p className="text-xl font-bold">{pendingApplicants.length}</p>
               </div>
             </div>
             <div className="flex items-center space-x-4">
               <i className="fas fa-briefcase text-maroon-700 text-6xl"></i>
               <div>
                 <p className="text-lg font-medium text-maroon-700">Jobs Posted</p>
-                <p className="text-xl font-bold">31</p>
+                <p className="text-xl font-bold">{jobPosts.length}</p>
               </div>
             </div>
           </div>
         </div>
-        <div className="mt-6">
-          <div className="w-full flex justify-between  mb-3">
+
+        {/* Current Hired Staffs */}
+        <div className="mt-6 w-full">
+          <div className="w-full flex justify-between mb-3">
             <p className="text-xl font-bold">My Team (Current Hired Staffs)</p>
             <a href="#" className="text-black underline mr-4 mt-1 text-lg font-semi">View All</a>
           </div>
-          <h2 className="mb-20 mr-3 font-bold text-base text-black bg-yellow-300 py-2 px-4 rounded w-[1000px] flex justify-between">
+          <h2 className="mb-4 mr-3 font-bold text-base text-black bg-yellow-300 py-2 px-4 rounded w-[1000px] flex justify-between">
             <span className="mr-8">FIRST NAME</span>
             <span className="mr-9">LAST NAME</span>
-            <span className="mr-8">BUSINESS COMPANY</span>
+            <span className="mr-8">SCHEDULE</span>
             <span className="mr-6">JOB POSITION</span>
             <span className="mr-6">STATUS</span>
           </h2>
+          {approvedApplicants.map((staff, index) => (
+            <div key={index} className="bg-white py-2 px-4 rounded w-[1000px] flex justify-between mb-2 shadow">
+              <span className="mr-8">{staff.applicantId.firstName}</span>
+              <span className="mr-9">{staff.applicantId.lastName}</span>
+              <span className="mr-8">{staff.jobId.schedule}</span>
+              <span className="mr-6">{staff.jobId.position}</span>
+              <span className="mr-6 text-green-600 font-semibold">{staff.status}</span>
+            </div>
+          ))}
+        </div>
+
+        {/* Applicants List */}
+        <div className="mt-12 w-full">
           <div className="w-full flex justify-between items-center mb-3">
             <p className="text-xl font-bold">Applicants List</p>
             <a href="#" className="text-black underline mr-4 mt-1 text-lg font-semi">View All</a>
           </div>
-          <h2 className="mb-20 mr-3 font-bold text-base text-black bg-yellow-300 py-2 px-4 rounded w-[1000px] flex justify-between">
+          <h2 className="mb-4 mr-3 font-bold text-base text-black bg-yellow-300 py-2 px-4 rounded w-[1000px] flex justify-between">
             <span className="mr-8">FIRST NAME</span>
             <span className="mr-9">LAST NAME</span>
-            <span className="mr-6">YEAR LEVEL</span>
+            <span className="mr-6">EMAIL</span>
             <span className="mr-6">STATUS</span>
           </h2>
+          {pendingApplicants.map((applicant, index) => (
+            <div key={index} className="bg-white py-2 px-4 rounded w-[1000px] flex justify-between mb-2 shadow">
+              <span className="mr-8">{applicant.applicantId.firstName}</span>
+              <span className="mr-9">{applicant.applicantId.lastName}</span>
+              <span className="mr-6">{applicant.applicantId.email}</span>
+              <span className="mr-6 text-yellow-600 font-semibold">{applicant.status}</span>
+            </div>
+          ))}
+        </div>
+
+        {/* Jobs Posted */}
+        <div className="mt-12 w-full">
           <div className="w-full flex justify-between items-center mb-3">
             <p className="text-xl font-bold">Jobs Posted</p>
             <a href="#" className="text-black underline mr-4 mt-1 text-lg font-semi">View All</a>
           </div>
-          <h2 className="mb-20 mr-3 font-bold text-base text-black bg-yellow-300 py-2 px-4 rounded w-[1000px] flex justify-between">
+          <h2 className="mb-4 mr-3 font-bold text-base text-black bg-yellow-300 py-2 px-4 rounded w-[1000px] flex justify-between">
             <span className="mr-8">BUSINESS COMPANY</span>
             <span className="mr-6">ADDRESS</span>
             <span className="mr-6">JOB POSITION</span>
             <span className="mr-6">SCHEDULE</span>
           </h2>
+          {jobPosts.map((job, index) => (
+            <div key={index} className="bg-white py-2 px-4 rounded w-[1000px] flex justify-between mb-2 shadow">
+              <div className="flex items-center mr-8">
+                {job.employerId.businessImage && (
+                  <img
+                    src={`http://localhost:5000/${job.employerId.businessImage}`}
+                    alt="Business Logo"
+                    className="w-10 h-10 rounded-full mr-2"
+                  />
+                )}
+                <span className="font-medium">{job.employerId.businessName}</span>
+              </div>
+              <span className="mr-6">{job.address}</span>
+              <span className="mr-6">{job.position}</span>
+              <span className="mr-6">{job.schedule}</span>
+            </div>
+          ))}
         </div>
       </div>
     </div>

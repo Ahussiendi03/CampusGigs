@@ -36,11 +36,11 @@ const EmployerSchema = new mongoose.Schema({
     },
     businessName: {
         type: String,
-        require: true
+        required: true
     },
     businessImage: {
         type: String,
-        require: true
+        required: true
     },
     streetAddress: {
         type: String,
@@ -49,6 +49,15 @@ const EmployerSchema = new mongoose.Schema({
     role: {
         type: String,
         default: "employer"
+    },
+    status: {
+        type: String,
+        enum: ['pending', 'approved', 'rejected'], // Restrict values to these statuses
+        default: 'pending' // Default status is 'pending' until approved by an admin
+    },
+    createdAt: {
+        type: Date,
+        default: Date.now
     }
 });
 

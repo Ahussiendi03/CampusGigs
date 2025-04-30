@@ -14,7 +14,7 @@ const AdminDashboard = () => {
         </div>
         <div className="flex items-center mb-8">
           <i className="fas fa-users text-lg mr-2"></i>
-          <Link to ="/AdminAccReg" className="text-lg font-medium mr-2 ml-2">Manage Account Registrations</Link>
+          <Link to ="/adminManageRegister" className="text-lg font-medium mr-2 ml-2">Manage Account Registrations</Link>
         </div>
         <div className="flex items-center mb-8">
           <i className="fas fa-briefcase text-lg mr-2"></i>

@@ -28,7 +28,7 @@ const EmployerRegisterSuccess = () => {
         <h2 className="ml-4 text-center font-bold text-3xl text-maroon-700 bg-yellow-300 py-2 px-4 rounded w-[450px]">SUCCESSFULLY REGISTERED</h2>
      
         <div className="mt-3 flex justify-center items-center w-full px-4">
-            <p>You are successfully registered you can now Sign In, <Link to="/sign-in" className="text-decoration: underline text-blue-500 font-semibold font-style: italic">Click here.</Link></p>
+            <p>You're account is pending admin approval, <Link to="/sign-in" className="text-decoration: underline text-blue-500 font-semibold font-style: italic">Sign In.</Link></p>
         </div>
       </div>
 

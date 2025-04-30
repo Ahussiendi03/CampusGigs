@@ -37,6 +37,15 @@ const ApplicantSchema = new mongoose.Schema({
     role: {
         type: String,
         default: "applicant"
+    },
+    status: {
+        type: String,
+        enum: ['pending', 'approved', 'rejected'], // Restrict values to these statuses
+        default: 'pending' // Default status is 'pending' until approved by an admin
+    },
+    createdAt: {
+        type: Date,
+        default: Date.now
     }
 });
 

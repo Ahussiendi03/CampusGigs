@@ -236,23 +236,23 @@ const EmployerSignUp = () => {
       {step === 3 && (
   <div className="flex justify-between items-center min-w-full">
     <div className="bg-gray-200 w-3/12 h-[550px] p-4 rounded-lg shadow-md">
-      <div className="flex items-center mb-8">
-        <i className={`fas fa-check-square ${formData.profilePicture ? 'text-green-500' : 'text-gray-400'} text-3xl mr-2`}></i>
-        <p className="text-lg font-medium mr-2 ml-2">Upload Profile Picture</p>
-      </div>
-      <div className="flex items-center mb-8">
-        <i className={`fas fa-check-square ${formData.businessPermit ? 'text-green-500' : 'text-gray-400'} text-3xl mr-2`}></i>
-        <p className="text-lg font-medium mr-2 ml-2">Upload Business Permit</p>
-      </div>
-      <div className="flex items-center mb-8">
-        <i className={`fas fa-check-square ${formData.id ? 'text-green-500' : 'text-gray-400'} text-3xl mr-2`}></i>
-        <p className="text-lg font-medium mr-2 ml-2">Upload Valid ID</p>
-      </div>
-      <div className="flex items-center mb-8">
-        <i className={`fas fa-check-square ${formData.otherInfo ? 'text-green-500' : 'text-gray-400'} text-3xl mr-2`}></i>
-        <p className="text-lg font-medium mr-2 ml-2">Other Information</p>
-      </div>
-    </div>
+          <div className="flex items-center mb-8">
+          <i className="fas fa-check-square text-green-500 text-3xl mr-2"></i>
+          <p className="text-lg font-medium mr-2 ml-2">Upload Profile Picture</p>
+          </div>
+          <div className="flex items-center mb-8">
+          <i className="fas fa-check-square text-gray-400 text-3xl mr-2"></i>
+          <p className="text-lg font-medium mr-2 ml-2">Upload Business Permit</p>
+          </div>
+          <div className="flex items-center mb-8">
+          <i className="fas fa-check-square text-gray-400 text-3xl mr-2"></i>
+          <p className="text-lg font-medium mr-2 ml-2">Upload Valid ID</p>
+          </div>
+          <div className="flex items-center mb-8">
+          <i className="fas fa-check-square text-gray-400 text-3xl mr-2"></i>
+          <p className="text-lg font-medium mr-2 ml-2">Other Informations</p>
+          </div>
+        </div>
 
     <div className="flex-1 flex flex-col items-center justify-center">
       <h2 className="mb-20 ml-4 text-center font-bold text-2xl text-maroon-700 bg-yellow-300 py-2 px-4 rounded w-[300px]">Employer Profile</h2>

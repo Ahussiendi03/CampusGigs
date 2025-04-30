@@ -24,6 +24,13 @@ import ParentTutors from "../components/ParentTutors";
 import ParentAppList from "../components/ParentAppList";
 import ParentPostTutor from "../components/ParentPostTutor";
 import AdminManageJob from "../components/AdminManageJob";
+import AdminManageRegister from "../components/AdminManageRegister";
+import ApplicantsJobApps from "../components/ApplicantsJobApps";
+import ApplicantsCurrentJob from "../components/ApplicantsCurrentJob";
+import ApplicantsLevelingSystem from "../components/ApplicantsLevelingSystem";
+import ApplicantsFeedBack from "../components/ApplicantsFeedback";
+import EmployerFeedBack from "../components/EmployerFeedback";
+import AdminManageTutor from "../components/AdminManageTutor";
 
 
 const router = createBrowserRouter([
@@ -55,6 +62,13 @@ const router = createBrowserRouter([
         {path: "parentAppList", element: <ParentAppList />},
         {path: "parentPostTutor", element: <ParentPostTutor />},
         {path: "adminManageJob", element: <AdminManageJob />},
+        {path: "adminManageRegister", element: <AdminManageRegister />},
+        {path: "applicantsJobApps", element: <ApplicantsJobApps />},
+        {path: "applicantsCurrentJob", element: <ApplicantsCurrentJob />},
+        {path: "applicantsLevelingSystem", element: <ApplicantsLevelingSystem />},
+        {path: "applicantsFeedback", element: <ApplicantsFeedBack />},
+        {path: "EmployerFeedBacks", element: <EmployerFeedBack />},
+        {path: "AdminManageTutor", element: <AdminManageTutor />},
         
 
       ]

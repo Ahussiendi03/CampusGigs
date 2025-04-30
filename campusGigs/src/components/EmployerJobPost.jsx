@@ -164,7 +164,7 @@ const EmployerJobPost = () => {
           <td className="py-2 px-4 border-b">{job.address}</td>
           <td className="py-2 px-4 border-b">{job.position}</td>
           <td className="py-2 px-4 border-b">{job.schedule}</td>
-          <td className="py-2 px-4 border-b">${job.salaryRate}</td>
+          <td className="py-2 px-4 border-b">{job.salaryRate}</td>
           <td className="py-2 px-4 border-b">{job.status}</td>
         </tr>
       ))}

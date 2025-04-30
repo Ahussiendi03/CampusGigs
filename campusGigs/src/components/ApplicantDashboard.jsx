@@ -6,9 +6,11 @@ import '@fortawesome/fontawesome-free/css/all.min.css';
 const ApplicantDashboard = () => {
   const [jobPosts, setJobPosts] = useState([]);
   const [applicantId, setApplicantId] = useState(null);
+  const [showModal, setShowModal] = useState(false);
+  const [selectedJob, setSelectedJob] = useState(null);
+  const [showConfirmModal, setShowConfirmModal] = useState(false);
 
   useEffect(() => {
-    // Fetch approved job posts on component mount
     const fetchApprovedJobPosts = async () => {
       try {
         const response = await axios.get('http://localhost:5000/api/jobPosts');
@@ -18,10 +20,9 @@ const ApplicantDashboard = () => {
       }
     };
 
-    // Retrieve applicantId from localStorage
-    const applicantId = localStorage.getItem('applicantId');
-    if (applicantId) {
-      setApplicantId(applicantId);
+    const storedApplicantId = localStorage.getItem('applicantId');
+    if (storedApplicantId) {
+      setApplicantId(storedApplicantId);
     } else {
       console.error('Applicant ID is missing. Ensure the user is logged in.');
     }
@@ -29,123 +30,209 @@ const ApplicantDashboard = () => {
     fetchApprovedJobPosts();
   }, []);
 
-  const handleApply = async (jobId, employerId) => {
-    if (!applicantId) {
-        console.error('Applicant ID is missing. Ensure the user is logged in.');
-        return;
+  const handleApply = async () => {
+    if (!applicantId || !selectedJob || !selectedJob._id || !selectedJob.employerId?._id) {
+      console.error('Missing required values:', {
+        applicantId,
+        jobId: selectedJob?._id,
+        employerId: selectedJob?.employerId?._id,
+      });
+      alert('Error: Missing required data.');
+      return;
     }
-
-    // Debugging output to ensure all values are present
-    console.log('Applying to job with the following data:', { jobId, applicantId, employerId });
-
-    // Check if jobId, applicantId, or employerId is missing
-    if (!jobId) {
-        console.error("Job ID is missing.");
-        return;
-    }
-    if (!employerId) {
-        console.error("Employer ID is missing.");
-        return;
-    }
-
+  
     try {
-        const response = await axios.post('http://localhost:5000/api/applications/apply', {
-            jobId,
-            applicantId,
-            employerId,
-        });
-        console.log('Application successful:', response.data);
+      console.log('Sending application request:', {
+        jobId: selectedJob._id,
+        applicantId,
+        employerId: selectedJob.employerId._id,
+      });
+  
+      const response = await axios.post('http://localhost:5000/api/applications/apply', {
+        jobId: selectedJob._id,
+        applicantId,
+        employerId: selectedJob.employerId._id,
+      });
+  
+      console.log('Application successful:', response.data);
+      alert('Application submitted successfully.');
     } catch (error) {
-        if (error.response) {
-            console.error('Error applying to job:', error.response.data);
-        } else {
-            console.error('Error applying to job:', error.message);
-        }
+      console.error('Error applying to job:', error.response?.data || error.message);
+      alert(`${error.response?.data?.message || 'You have already applied in this job'}`);
     }
-};
+  
+    setShowConfirmModal(false);
+  };
+  
 
+  const openModal = (job) => {
+    setSelectedJob(job);
+    setShowModal(true);
+  };
+
+  const closeModal = () => {
+    setShowModal(false);
+    setSelectedJob(null);
+  };
+
+  const openConfirmModal = (job) => {
+    setSelectedJob(job);
+    setShowConfirmModal(true);
+  };
+
+  const closeConfirmModal = () => {
+    setShowConfirmModal(false);
+    setSelectedJob(null);
+  };
 
   return (
     <div className="flex justify-center">
-      {/* Sidebar */}
-      <div className="bg-gray-200 w-[280px] h-[950px] rounded-lg p-4 shadow-md">
+      <div className="bg-gray-200 w-[280px] h-[950px] p-4 shadow-md">
         <div className="flex items-center mb-8">
           <i className="fas fa-home text-lg mr-2"></i>
-          <p className="text-lg font-medium mr-2 ml-2">Dashboard</p>
+          <Link to="/applicantDashboard" className="text-lg font-medium mr-2 ml-2">
+            Dashboard
+          </Link>
         </div>
         <div className="flex items-center mb-8">
           <i className="fas fa-user text-lg mr-2"></i>
-          <Link to="/ApplicantsMyAcc" className="text-lg font-medium mr-2 ml-2">My Account</Link>
+          <Link to="/ApplicantsMyAcc" className="text-lg font-medium mr-2 ml-2">
+            My Account
+          </Link>
+        </div>
+        <div className="flex items-center mb-8">
+          <i className="fas fa-briefcase text-lg mr-2"></i>
+          <Link to="/ApplicantsJobApps" className="text-lg font-medium mr-2 ml-2">Job Applications</Link>
+        </div>
+        <div className="flex items-center mb-8">
+          <i className="fas fa-briefcase text-lg mr-2"></i>
+          <Link to="/ApplicantsCurrentJob" className="text-lg font-medium mr-2 ml-2">Current Job</Link>
+        </div>
+        <div className="flex items-center mb-8">
+          <i className="fa-solid fa-chart-simple text-lg mr-2"></i>
+          <Link to="/ApplicantsLevelingSystem" className="text-lg font-medium mr-2 ml-2">
+            Level
+          </Link>
         </div>
         <div className="flex items-center mb-8">
           <i className="fas fa-comments text-lg mr-2"></i>
-          <Link to="/ApplicantsFeedBacks" className="text-lg font-medium ml-2">Feedbacks</Link>
+          <Link to="/applicantsFeedback" className="text-lg font-medium ml-2">
+            Feedbacks
+          </Link>
+        </div>
+        
+      </div>
+
+      <div className="flex-1 p-6 mt-2">
+        <div className="text-center mb-8">
+          <h2 className="text-3xl font-extrabold text-maroon mb-2">Available Job Opportunities</h2>
+        </div>
+
+        <div className="ml-16 grid grid-cols-3 gap-6">
+          {jobPosts.map((job) => (
+            <div
+              key={job._id}
+              className="bg-gray-200 border-2 border-maroon-700 shadow-lg rounded-lg overflow-hidden cursor-pointer transition transform hover:scale-105"
+              style={{ height: '420px', maxWidth: '260px' }}
+            >
+              <div className="relative w-full h-2/3">
+                {job.employerId.businessImage && (
+                  <img
+                    src={`http://localhost:5000/${job.employerId.businessImage}`}
+                    alt="Business Logo"
+                    className="w-full h-full object-cover"
+                  />
+                )}
+              </div>
+
+              <div className="p-4">
+                <p className="text-lg text-black font-bold text-center mb-1">
+                  {job.employerId.businessName}
+                </p>
+                <p className="text-lg text-black text-center mb-2">
+                  <span className="font-semibold">Job Position:</span> {job.position}
+                </p>
+
+                <div className="flex justify-between">
+                  <button
+                    onClick={() => openModal(job)}
+                    className="bg-maroon-700 text-white py-2 px-4 rounded-full hover:bg-gold hover:text-maroon transition"
+                  >
+                    View
+                  </button>
+                  <button
+                    onClick={() => openConfirmModal(job)}
+                    className="bg-maroon-700 text-white py-2 px-4 rounded-full hover:bg-gold hover:text-maroon transition"
+                  >
+                    Apply
+                  </button>
+                </div>
+              </div>
+            </div>
+          ))}
         </div>
       </div>
 
-      {/* Main Content */}
-      <div className="flex-1 flex flex-col items-center justify-center mb-auto p-4">
-        <div className="flex justify-between items-center w-full mb-6">
-          <p className="text-2xl font-bold">Hello, Welcome to MSU CampusGigs!</p>
-          <div className="relative">
-            <input
-              type="text"
-              placeholder="Search..."
-              className="border border-black rounded-lg px-4 py-2 w-[300px] outline-none focus:ring-2 focus:ring-blue-500"
-            />
-            <i className="fas fa-search absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-600"></i>
+      {showConfirmModal && (
+        <div className="fixed inset-0 bg-gray-500 bg-opacity-50 flex justify-center items-center z-50">
+          <div className="bg-white p-6 rounded-lg shadow-lg text-center w-1/3">
+            <h3 className="text-xl font-bold mb-4">Are you sure you want to apply for this job?</h3>
+            <div className="flex justify-center gap-4">
+              <button
+                onClick={handleApply}
+                className="bg-green-600 text-white py-2 px-4 rounded-full hover:bg-green-500 transition"
+              >
+                Yes
+              </button>
+              <button
+                onClick={closeConfirmModal}
+                className="bg-red-600 text-white py-2 px-4 rounded-full hover:bg-red-500 transition"
+              >
+                No
+              </button>
+            </div>
           </div>
         </div>
-        <div className="w-full">
-          <div className="w-full flex justify-between items-center mb-3">
-            <p className="text-xl font-bold">Jobs Posted</p>
-          </div>
-          <table className="min-w-full bg-white border border-gray-200 mb-20">
-            <thead>
-              <tr className="bg-yellow-300 text-black font-bold text-base">
-                <th className="py-2 px-4 border-b">Business Company</th>
-                <th className="py-2 px-4 border-b">Address</th>
-                <th className="py-2 px-4 border-b">Job Position</th>
-                <th className="py-2 px-4 border-b">Schedule</th>
-                <th className="py-2 px-4 border-b">Rate</th>
-                <th className="py-2 px-4 border-b">Action</th>
-              </tr>
-            </thead>
-            <tbody>
-              {jobPosts.length > 0 ? (
-                jobPosts.map((job) => (
-                  <tr key={job._id} className="bg-gray-100">
-                    <td className="py-2 px-4 border-b flex items-center">
-                      {job.employerId.businessImage && (
-                        <img
-                          src={`http://localhost:5000/${job.employerId.businessImage}`}
-                          alt="Business Logo"
-                          className="w-10 h-10 rounded-full mr-2"
-                        />
-                      )}
-                      <span className="font-medium">{job.employerId.businessName}</span>
-                    </td>
-                    <td className="py-2 px-4 border-b">{job.address}</td>
-                    <td className="py-2 px-4 border-b">{job.position}</td>
-                    <td className="py-2 px-4 border-b">{job.schedule}</td>
-                    <td className="py-2 px-4 border-b">{job.salaryRate}</td>
-                    <td className="py-2 px-4 border-b">
-                    <button className="bg-blue-500 text-white py-1 px-3 rounded hover:bg-blue-600" onClick={() => handleApply(job._id, job.employerId._id)}>Apply</button>
+      )}
 
-                    </td>
-                  </tr>
-                ))
-              ) : (
-                <tr>
-                  <td colSpan="5" className="text-center py-4">
-                    No approved job posts available.
-                  </td>
-                </tr>
+      {showModal && (
+        <div
+        className="fixed inset-0 bg-gray-500 bg-opacity-50 flex justify-center items-center z-50"
+        onClick={closeModal} // Close modal when clicking outside
+      >
+        <div
+          className="bg-white p-6 rounded-lg shadow-lg w-2/3 max-w-3xl relative"
+          onClick={(e) => e.stopPropagation()} // Prevent closing modal when clicking inside
+        >
+          <div className="flex items-center mb-4">
+            <div className="w-1/3">
+              {selectedJob.employerId.businessImage && (
+                <img
+                  src={`http://localhost:5000/${selectedJob.employerId.businessImage}`}
+                  alt="Business Logo"
+                  className="w-full h-auto rounded-lg shadow-md"
+                />
               )}
-            </tbody>
-          </table>
+            </div>
+            <div className="w-2/3 pl-4">
+              <h3 className="text-2xl font-bold mb-2">{selectedJob.position}</h3>
+              <p><strong>BusinessName:</strong> {selectedJob.employerId.businessName}</p>
+              <p><strong>Address:</strong> {selectedJob.address}</p>
+              <p><strong>Schedule:</strong> {selectedJob.schedule}</p>
+              <p><strong>Salary Rate:</strong> {selectedJob.salaryRate}</p>
+            </div>
+          </div>
+
+          {/* Close Button Positioned at the Bottom Right */}
+          <button
+            onClick={closeModal}
+            className="absolute bottom-4 right-4 bg-gray-800 text-white py-2 px-4 rounded-full shadow-lg hover:bg-gray-700"
+          >
+            ✕ Close
+          </button>
         </div>
       </div>
+      )}
     </div>
   );
 };
