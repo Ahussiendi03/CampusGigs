@@ -17,7 +17,14 @@ const employerRoutes = require('./routes/jobPosts');
 const applicationsRoutes = require('./routes/applications');
 const applicantRoutes = require('./routes/applicantRoutes');
 const registrationRoutes = require('./routes/registration');    
-
+const feedbackRoute = require('./routes/feedback');
+const applicantsLevel = require('./routes/applicants');
+const tutorPostRoutes = require('./routes/tutorPosts');
+const tutorApplicationsRoutes = require('./routes/tutorApplications');
+const parentFeedbackRoutes = require('./routes/parentFeedback');
+const applicantFeedbackRoutes = require('./routes/applicantFeedback');
+const parentRoutes = require('./routes/parents');
+const employer = require('./routes/employers');
 
 const app = express();
 app.use(express.json());
@@ -86,9 +93,14 @@ app.use('/api/employers', employerRoutes);
 app.use('/api/applications', applicationsRoutes);
 app.use('/api', applicantRoutes);
 app.use('/api', registrationRoutes);
-
-
-
+app.use('/api/feedback', feedbackRoute);
+app.use('/api/applicants', applicantsLevel);
+app.use('/api/tutorPosts', tutorPostRoutes);
+app.use('/api/tutorApplication', tutorApplicationsRoutes);
+app.use('/api/parent-feedback', parentFeedbackRoutes);
+app.use('/api/applicant-feedback', applicantFeedbackRoutes);
+app.use('/api/parent', parentRoutes);
+app.use('/api/employer', employer);
 
 // New API to fetch employer data
 app.get('/api/employer/me', authenticate, (req, res) => {
@@ -105,8 +117,6 @@ app.get('/api/employer/me', authenticate, (req, res) => {
             res.status(500).json({ status: "Error", message: "An error occurred while fetching employer data" });
         });
 });
-
-
 
 app.put('/api/employer/update', authenticate, (req, res) => {
     const email = req.user.email; // Extract email from authenticated user
@@ -185,11 +195,11 @@ app.post("/sign-in", (req, res) => {
                                         bcrypt.compare(password, parent.password, (err, response) => {
                                             if (response) {
                                                 const token = jwt.sign(
-                                                    { email: parent.email, role: parent.role },
+                                                    { email: parent.email, role: parent.role, parentId: parent._id },
                                                     "jwt-secret-key",
                                                 );
                                                 res.cookie("token", token);
-                                                res.json({ status: "Success", role: parent.role });
+                                                res.json({ status: "Success", role: parent.role, parentId: parent._id });
                                             } else {
                                                 res.json({ status: "Error", message: "The password is incorrect" });
                                             }

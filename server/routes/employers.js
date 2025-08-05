@@ -1,6 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const Application = require('../models/Application');
+const Employer = require('../models/Employer');
 
 // Route for fetching pending applications for a specific employer
 router.get('/:employerId/applications', async (req, res) => {
@@ -17,5 +18,23 @@ router.get('/:employerId/applications', async (req, res) => {
     res.status(500).json({ message: 'Error fetching applications' });
   }
 });
+
+// GET /api/employers/:employerId/positions
+router.get('/:employerId/positions', async (req, res) => {
+  try {
+
+    const employer = await Employer.findById(req.params.employerId);
+    if (!employer) {
+      return res.status(404).json({ message: 'Employer not found' });
+    }
+
+    res.json({ positions: employer.savedPositions || [] });
+  } catch (err) {
+    console.error('Error fetching saved positions:', err);
+    res.status(500).json({ message: 'Failed to fetch saved positions' });
+  }
+});
+
+
 
 module.exports = router;

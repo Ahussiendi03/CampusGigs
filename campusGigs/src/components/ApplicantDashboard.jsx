@@ -1,238 +1,383 @@
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate, useLocation } from 'react-router-dom';
+import Cookies from 'js-cookie';
+import { jwtDecode } from 'jwt-decode';
 import '@fortawesome/fontawesome-free/css/all.min.css';
 
 const ApplicantDashboard = () => {
-  const [jobPosts, setJobPosts] = useState([]);
-  const [applicantId, setApplicantId] = useState(null);
-  const [showModal, setShowModal] = useState(false);
-  const [selectedJob, setSelectedJob] = useState(null);
-  const [showConfirmModal, setShowConfirmModal] = useState(false);
+  const navigate = useNavigate();
+  const location = useLocation();
+
+  const [currentJobs, setCurrentJobs] = useState([]);
+  const [pendingApplications, setPendingApplications] = useState([]);
+  const [completedJobs, setCompletedJobs] = useState([]);
+  const [showAccMenu, setShowAccMenu] = useState(false);
+const [showJobMenu, setShowJobMenu] = useState(false);
 
   useEffect(() => {
-    const fetchApprovedJobPosts = async () => {
+    const fetchAllDashboardData = async () => {
       try {
-        const response = await axios.get('http://localhost:5000/api/jobPosts');
-        setJobPosts(response.data);
+        const token = Cookies.get('token');
+        if (!token) return console.error('No token found');
+
+        const decoded = jwtDecode(token);
+        const applicantId =
+          decoded.applicantId || decoded.userId || decoded.id || decoded.email;
+        if (!applicantId) return console.error('Applicant ID is undefined');
+
+        const pendingRes = await axios.get(
+          'http://localhost:5000/api/applications/job-applications',
+          { withCredentials: true }
+        );
+        setPendingApplications(pendingRes.data);
+
+        const completedRes = await axios.get(
+          `http://localhost:5000/api/applications/completed/${applicantId}`
+        );
+
+        const formattedCompleted = completedRes.data.map((entry) => ({
+          type: entry.type,
+          company: entry.company,
+          position: entry.position,
+          schedule: entry.schedule,
+          completionDate: entry.completionDate,
+        }));
+        setCompletedJobs(formattedCompleted);
+
+        const [jobRes, tutorRes] = await Promise.all([
+          axios.get(`http://localhost:5000/api/applications/approved/${applicantId}`),
+          axios.get(`http://localhost:5000/api/tutorApplication/approved/${applicantId}`),
+        ]);
+
+        const filteredJobRes = jobRes.data.filter(
+          (app) => app.status === 'approved' && !app.completionDate
+        );
+        const filteredTutorRes = tutorRes.data.filter(
+          (app) => app.status === 'approved' && !app.completionDate
+        );
+
+        const formattedJobApps = filteredJobRes.map((app) => ({
+          ...app,
+          type: 'job',
+          position: app.jobId?.position,
+          salaryRate: app.jobId?.salaryRate,
+          schedule: app.jobId?.schedule,
+          applicationDate: app.applicationDate,
+          image: app.employerId?.businessImage,
+          name: app.employerId?.businessName,
+        }));
+
+        const formattedTutorApps = filteredTutorRes.map((app) => ({
+          ...app,
+          type: 'tutor',
+          position: app.tutorPostId?.tutorType,
+          salaryRate: app.tutorPostId?.salary,
+          schedule: app.tutorPostId?.schedule,
+          applicationDate: app.createdAt,
+          image: null,
+          name: 'Tutor',
+        }));
+
+        setCurrentJobs([...formattedJobApps, ...formattedTutorApps]);
       } catch (error) {
-        console.error('Error fetching job posts:', error);
+        console.error('Failed to fetch dashboard data:', error);
       }
     };
 
-    const storedApplicantId = localStorage.getItem('applicantId');
-    if (storedApplicantId) {
-      setApplicantId(storedApplicantId);
-    } else {
-      console.error('Applicant ID is missing. Ensure the user is logged in.');
-    }
-
-    fetchApprovedJobPosts();
+    fetchAllDashboardData();
   }, []);
 
-  const handleApply = async () => {
-    if (!applicantId || !selectedJob || !selectedJob._id || !selectedJob.employerId?._id) {
-      console.error('Missing required values:', {
-        applicantId,
-        jobId: selectedJob?._id,
-        employerId: selectedJob?.employerId?._id,
-      });
-      alert('Error: Missing required data.');
-      return;
-    }
-  
-    try {
-      console.log('Sending application request:', {
-        jobId: selectedJob._id,
-        applicantId,
-        employerId: selectedJob.employerId._id,
-      });
-  
-      const response = await axios.post('http://localhost:5000/api/applications/apply', {
-        jobId: selectedJob._id,
-        applicantId,
-        employerId: selectedJob.employerId._id,
-      });
-  
-      console.log('Application successful:', response.data);
-      alert('Application submitted successfully.');
-    } catch (error) {
-      console.error('Error applying to job:', error.response?.data || error.message);
-      alert(`${error.response?.data?.message || 'You have already applied in this job'}`);
-    }
-  
-    setShowConfirmModal(false);
-  };
-  
-
-  const openModal = (job) => {
-    setSelectedJob(job);
-    setShowModal(true);
-  };
-
-  const closeModal = () => {
-    setShowModal(false);
-    setSelectedJob(null);
-  };
-
-  const openConfirmModal = (job) => {
-    setSelectedJob(job);
-    setShowConfirmModal(true);
-  };
-
-  const closeConfirmModal = () => {
-    setShowConfirmModal(false);
-    setSelectedJob(null);
-  };
+  const sidebarItems = [
+    { path: '/ApplicantDashboard', icon: 'fa-home', label: 'Dashboard' },
+    {
+      path: '/ApplicantsJobPostings',
+      icon: 'fa-clipboard-list',
+      label: (
+        <div className="flex items-center justify-between w-full">
+          <span>Job Postings</span>
+          <i className="fas fa-chevron-down text-base ml-20 text-gray-600"></i>
+        </div>
+      ),
+    },
+    
+    
+    { path: '/ApplicantsMyAcc', icon: 'fa-user', label: 'My Account' },
+    { path: '/ApplicantsJobApps', icon: 'fa-users', label: 'Job Applications' },
+    { path: '/ApplicantsCurrentJob', icon: 'fa-users', label: 'Current Job' },
+    { path: '/ApplicantsLevelingSystem', icon: 'fa-briefcase', label: 'Level' },
+    { path: '/ApplicantsFeedback', icon: 'fa-comments', label: 'Feedbacks' },
+  ];
 
   return (
     <div className="flex justify-center">
-      <div className="bg-gray-200 w-[280px] h-[950px] p-4 shadow-md">
-        <div className="flex items-center mb-8">
-          <i className="fas fa-home text-lg mr-2"></i>
-          <Link to="/applicantDashboard" className="text-lg font-medium mr-2 ml-2">
-            Dashboard
-          </Link>
-        </div>
-        <div className="flex items-center mb-8">
-          <i className="fas fa-user text-lg mr-2"></i>
-          <Link to="/ApplicantsMyAcc" className="text-lg font-medium mr-2 ml-2">
-            My Account
-          </Link>
-        </div>
-        <div className="flex items-center mb-8">
-          <i className="fas fa-briefcase text-lg mr-2"></i>
-          <Link to="/ApplicantsJobApps" className="text-lg font-medium mr-2 ml-2">Job Applications</Link>
-        </div>
-        <div className="flex items-center mb-8">
-          <i className="fas fa-briefcase text-lg mr-2"></i>
-          <Link to="/ApplicantsCurrentJob" className="text-lg font-medium mr-2 ml-2">Current Job</Link>
-        </div>
-        <div className="flex items-center mb-8">
-          <i className="fa-solid fa-chart-simple text-lg mr-2"></i>
-          <Link to="/ApplicantsLevelingSystem" className="text-lg font-medium mr-2 ml-2">
-            Level
-          </Link>
-        </div>
-        <div className="flex items-center mb-8">
-          <i className="fas fa-comments text-lg mr-2"></i>
-          <Link to="/applicantsFeedback" className="text-lg font-medium ml-2">
-            Feedbacks
-          </Link>
-        </div>
-        
+      {/* Sidebar */}
+      <div className="bg-gray-200 w-[290px] h-auto p-4 shadow-md">
+  <Link
+    to="/ApplicantDashboard"
+    className={`flex items-center mb-4 px-4 py-3 rounded-lg cursor-pointer ${
+      location.pathname === '/ApplicantDashboard' ? 'bg-gold shadow-md' : 'hover:bg-gray-300'
+    }`}
+  >
+    <i className="fas fa-home text-lg mr-2"></i>
+    <span className="text-lg font-bold">Dashboard</span>
+  </Link>
+
+  <Link
+    to="/ApplicantsJobPostings"
+    className={`flex items-center mb-4 px-4 py-3 rounded-lg cursor-pointer ${
+      location.pathname === '/ApplicantsJobPostings' ? 'bg-gold shadow-md' : 'hover:bg-gray-300'
+    }`}
+  >
+    <i className="fas fa-clipboard-list text-lg mr-2"></i>
+    <span className="text-lg font-bold">Job Postings</span>
+    <i className='fas fa-chevron-down text-base ml-20 text-gray-600'></i>
+  </Link>
+
+  {/* Dropdown: My Account */}
+  <div className="mb-4">
+    <div
+      className="flex items-center justify-between px-4 py-3 rounded-lg cursor-pointer hover:bg-gray-300"
+      onClick={() => setShowAccMenu(!showAccMenu)}
+    >
+      <div className="flex items-center">
+        <i className="fas fa-user text-lg mr-2"></i>
+        <span className="text-lg font-bold">My Account</span>
       </div>
+      <i
+        className={`fas fa-chevron-${showAccMenu ? 'up' : 'down'} text-gray-700 transition-transform duration-200`}
+      ></i>
+    </div>
 
-      <div className="flex-1 p-6 mt-2">
-        <div className="text-center mb-8">
-          <h2 className="text-3xl font-extrabold text-maroon mb-2">Available Job Opportunities</h2>
-        </div>
-
-        <div className="ml-16 grid grid-cols-3 gap-6">
-          {jobPosts.map((job) => (
-            <div
-              key={job._id}
-              className="bg-gray-200 border-2 border-maroon-700 shadow-lg rounded-lg overflow-hidden cursor-pointer transition transform hover:scale-105"
-              style={{ height: '420px', maxWidth: '260px' }}
-            >
-              <div className="relative w-full h-2/3">
-                {job.employerId.businessImage && (
-                  <img
-                    src={`http://localhost:5000/${job.employerId.businessImage}`}
-                    alt="Business Logo"
-                    className="w-full h-full object-cover"
-                  />
-                )}
-              </div>
-
-              <div className="p-4">
-                <p className="text-lg text-black font-bold text-center mb-1">
-                  {job.employerId.businessName}
-                </p>
-                <p className="text-lg text-black text-center mb-2">
-                  <span className="font-semibold">Job Position:</span> {job.position}
-                </p>
-
-                <div className="flex justify-between">
-                  <button
-                    onClick={() => openModal(job)}
-                    className="bg-maroon-700 text-white py-2 px-4 rounded-full hover:bg-gold hover:text-maroon transition"
-                  >
-                    View
-                  </button>
-                  <button
-                    onClick={() => openConfirmModal(job)}
-                    className="bg-maroon-700 text-white py-2 px-4 rounded-full hover:bg-gold hover:text-maroon transition"
-                  >
-                    Apply
-                  </button>
-                </div>
-              </div>
-            </div>
-          ))}
-        </div>
-      </div>
-
-      {showConfirmModal && (
-        <div className="fixed inset-0 bg-gray-500 bg-opacity-50 flex justify-center items-center z-50">
-          <div className="bg-white p-6 rounded-lg shadow-lg text-center w-1/3">
-            <h3 className="text-xl font-bold mb-4">Are you sure you want to apply for this job?</h3>
-            <div className="flex justify-center gap-4">
-              <button
-                onClick={handleApply}
-                className="bg-green-600 text-white py-2 px-4 rounded-full hover:bg-green-500 transition"
-              >
-                Yes
-              </button>
-              <button
-                onClick={closeConfirmModal}
-                className="bg-red-600 text-white py-2 px-4 rounded-full hover:bg-red-500 transition"
-              >
-                No
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {showModal && (
-        <div
-        className="fixed inset-0 bg-gray-500 bg-opacity-50 flex justify-center items-center z-50"
-        onClick={closeModal} // Close modal when clicking outside
-      >
-        <div
-          className="bg-white p-6 rounded-lg shadow-lg w-2/3 max-w-3xl relative"
-          onClick={(e) => e.stopPropagation()} // Prevent closing modal when clicking inside
+    {showAccMenu && (
+      <div className="ml-6 mt-2">
+        <Link
+          to="/ApplicantsMyAcc"
+          className={`flex items-center mb-2 px-4 py-3 rounded-lg cursor-pointer ${
+            location.pathname === '/ApplicantsMyAcc' ? 'bg-gold shadow-md' : 'hover:bg-gray-300'
+          }`}
         >
-          <div className="flex items-center mb-4">
-            <div className="w-1/3">
-              {selectedJob.employerId.businessImage && (
-                <img
-                  src={`http://localhost:5000/${selectedJob.employerId.businessImage}`}
-                  alt="Business Logo"
-                  className="w-full h-auto rounded-lg shadow-md"
-                />
-              )}
+          <i className="fas fa-id-badge text-base mr-2"></i>
+          <span className="text-base font-bold">Profile</span>
+        </Link>
+        <Link
+          to="/ApplicantsLevelingSystem"
+          className={`flex items-center px-4 py-3 rounded-lg cursor-pointer ${
+            location.pathname === '/ApplicantsLevelingSystem' ? 'bg-gold shadow-md' : 'hover:bg-gray-300'
+          }`}
+        >
+          <i className="fas fa-chart-line text-base mr-2"></i>
+          <span className="text-base font-bold">Level</span>
+        </Link>
+      </div>
+    )}
+  </div>
+
+  {/* Dropdown: Job Status */}
+  <div className="mb-4">
+    <div
+      className="flex items-center justify-between px-4 py-3 rounded-lg cursor-pointer hover:bg-gray-300"
+      onClick={() => setShowJobMenu(!showJobMenu)}
+    >
+      <div className="flex items-center">
+        <i className="fas fa-briefcase text-lg mr-2"></i>
+        <span className="text-lg font-bold">Job Status</span>
+      </div>
+      <i
+        className={`fas fa-chevron-${showJobMenu ? 'up' : 'down'} text-gray-700 transition-transform duration-200`}
+      ></i>
+    </div>
+
+    {showJobMenu && (
+      <div className="ml-6 mt-2">
+        <Link
+          to="/ApplicantsJobApps"
+          className={`flex items-center mb-2 px-4 py-3 rounded-lg cursor-pointer ${
+            location.pathname === '/ApplicantsJobApps' ? 'bg-gold shadow-md' : 'hover:bg-gray-300'
+          }`}
+        >
+          <i className="fas fa-tasks text-base mr-2"></i>
+          <span className="text-base font-bold">Applications</span>
+        </Link>
+        <Link
+          to="/ApplicantsCurrentJob"
+          className={`flex items-center px-4 py-3 rounded-lg cursor-pointer ${
+            location.pathname === '/ApplicantsCurrentJob' ? 'bg-gold shadow-md' : 'hover:bg-gray-300'
+          }`}
+        >
+          <i className="fas fa-briefcase text-base mr-2"></i>
+          <span className="text-base font-bold">Current Job</span>
+        </Link>
+      </div>
+    )}
+  </div>
+
+  <Link
+    to="/ApplicantsFeedback"
+    className={`flex items-center mb-4 px-4 py-3 rounded-lg cursor-pointer ${
+      location.pathname === '/ApplicantsFeedback' ? 'bg-gold shadow-md' : 'hover:bg-gray-300'
+    }`}
+  >
+    <i className="fas fa-comments text-lg mr-2"></i>
+    <span className="text-lg font-bold">Feedbacks</span>
+  </Link>
+</div>
+
+      {/* Main Content */}
+      <div className="flex-1 flex flex-col items-center justify-center mb-80 p-4">
+        <div className="flex justify-between items-center w-full mb-6">
+          <p className="text-2xl font-bold">Hello, Welcome to MSU CampusGigs!</p>
+          {/* <div className="relative">
+            <input
+              type="text"
+              placeholder="Search..."
+              className="border border-black rounded-lg px-4 py-2 w-[300px] outline-none focus:ring-2 focus:ring-blue-500"
+            />
+            <i className="fas fa-search absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-600"></i>
+          </div> */}
+        </div>
+
+        {/* Summary Cards */}
+        <div className="flex justify-start mb-6 w-full">
+          <div className="flex items-center space-x-16 p-4">
+            <div className="flex items-center space-x-4">
+              <i className="fas fa-tasks text-maroon-700 text-6xl"></i>
+              <div>
+                <p className="text-lg font-medium text-maroon-700">Jobs Completed</p>
+                <p className="text-xl font-bold">{completedJobs.length}</p>
+              </div>
             </div>
-            <div className="w-2/3 pl-4">
-              <h3 className="text-2xl font-bold mb-2">{selectedJob.position}</h3>
-              <p><strong>BusinessName:</strong> {selectedJob.employerId.businessName}</p>
-              <p><strong>Address:</strong> {selectedJob.address}</p>
-              <p><strong>Schedule:</strong> {selectedJob.schedule}</p>
-              <p><strong>Salary Rate:</strong> {selectedJob.salaryRate}</p>
+            <div className="flex items-center space-x-4">
+              <i className="fas fa-clock text-maroon-700 text-6xl"></i>
+              <div>
+                <p className="text-lg font-medium text-maroon-700">Job Applications</p>
+                <p className="text-xl font-bold">{pendingApplications.length}</p>
+              </div>
+            </div>
+            <div className="flex items-center space-x-4">
+              <i className="fas fa-briefcase text-maroon-700 text-6xl"></i>
+              <div>
+                <p className="text-lg font-medium text-maroon-700">Current Jobs</p>
+                <p className="text-xl font-bold">{currentJobs.length}</p>
+              </div>
             </div>
           </div>
-
-          {/* Close Button Positioned at the Bottom Right */}
-          <button
-            onClick={closeModal}
-            className="absolute bottom-4 right-4 bg-gray-800 text-white py-2 px-4 rounded-full shadow-lg hover:bg-gray-700"
-          >
-            ✕ Close
-          </button>
         </div>
+
+        {/* Current Jobs Table */}
+        <section className="mb-12 w-full">
+  <div className="flex justify-between items-center mb-4">
+    <h2 className="text-2xl font-bold text-gray-800">Current Jobs</h2>
+  </div>
+  <div className="overflow-x-auto rounded-lg shadow">
+    <table className="min-w-full bg-white">
+      <thead className="bg-yellow-300 text-yellow-900">
+        <tr>
+          <th className="text-left py-3 px-6">Company</th>
+          <th className="text-left py-3 px-6">Position</th>
+          <th className="text-left py-3 px-6">Schedule</th>
+          <th className="text-left py-3 px-6">Status</th>
+        </tr>
+      </thead>
+      <tbody>
+        {currentJobs.length > 0 ? (
+          currentJobs.map((job, index) => (
+            <tr
+              key={index}
+              className={`border-b border-gray-200 ${
+                index % 2 === 0 ? 'bg-yellow-50' : 'bg-white'
+              }`}
+            >
+              <td className="py-3 px-6">{job.name}</td>
+              <td className="py-3 px-6">{job.position}</td>
+              <td className="py-3 px-6">{job.schedule}</td>
+              <td className="py-3 px-6 text-green-600 font-semibold">Approved</td>
+            </tr>
+          ))
+        ) : (
+          <tr>
+            <td colSpan="4" className="text-center py-4 text-gray-500">
+              No current jobs assigned.
+            </td>
+          </tr>
+        )}
+      </tbody>
+    </table>
+  </div>
+</section>
+
+        {/* Pending Applications Table */}
+        <section className="mb-12 w-full">
+  <div className="flex justify-between items-center mb-4">
+    <h2 className="text-2xl font-bold text-gray-800">Job Applications</h2>
+  </div>
+  <div className="overflow-x-auto rounded-lg shadow">
+    <table className="min-w-full bg-white">
+      <thead className="bg-yellow-300 text-yellow-900">
+        <tr>
+          <th className="text-left py-3 px-6">Company</th>
+          <th className="text-left py-3 px-6">Position</th>
+          <th className="text-left py-3 px-6">Schedule</th>
+          <th className="text-left py-3 px-6">Status</th>
+        </tr>
+      </thead>
+      <tbody>
+        {pendingApplications.map((app, index) => (
+          <tr
+            key={index}
+            className={`border-b border-gray-200 ${
+              index % 2 === 0 ? 'bg-yellow-50' : 'bg-white'
+            }`}
+          >
+            <td className="py-3 px-6">{app.employerId?.businessName || 'N/A'}</td>
+            <td className="py-3 px-6">{app.jobId?.position || 'N/A'}</td>
+            <td className="py-3 px-6">{app.jobId?.schedule || 'N/A'}</td>
+            <td className="py-3 px-6 text-yellow-600 font-semibold">{app.status}</td>
+          </tr>
+        ))}
+      </tbody>
+    </table>
+  </div>
+</section>
+
+{/* === Completed Jobs Table === */}
+<section className="mb-12 w-full">
+  <div className="flex justify-between items-center mb-4">
+    <h2 className="text-2xl font-bold text-gray-800">Jobs Completed</h2>
+  </div>
+  <div className="overflow-x-auto rounded-lg shadow">
+    <table className="min-w-full bg-white">
+      <thead className="bg-yellow-300 text-yellow-900">
+        <tr>
+          <th className="text-left py-3 px-6">Company</th>
+          <th className="text-left py-3 px-6">Position</th>
+          <th className="text-left py-3 px-6">Schedule</th>
+          <th className="text-left py-3 px-6">Completion Date</th>
+        </tr>
+      </thead>
+      <tbody>
+        {completedJobs.map((job, index) => (
+          <tr
+            key={index}
+            className={`border-b border-gray-200 ${
+              index % 2 === 0 ? 'bg-yellow-50' : 'bg-white'
+            }`}
+          >
+            <td className="py-3 px-6">{job.company}</td>
+            <td className="py-3 px-6">{job.position}</td>
+            <td className="py-3 px-6">{job.schedule}</td>
+            <td className="py-3 px-6">
+              {job.completionDate
+                ? new Date(job.completionDate).toLocaleDateString()
+                : 'N/A'}
+            </td>
+          </tr>
+        ))}
+      </tbody>
+    </table>
+  </div>
+</section>
       </div>
-      )}
     </div>
   );
 };

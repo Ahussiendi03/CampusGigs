@@ -58,7 +58,11 @@ const EmployerSchema = new mongoose.Schema({
     createdAt: {
         type: Date,
         default: Date.now
-    }
+    },
+    savedPositions: {
+        type: [String],
+        default: [],
+      }
 });
 
 const EmployerModel = mongoose.model('employer', EmployerSchema);

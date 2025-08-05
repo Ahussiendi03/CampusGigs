@@ -24,28 +24,43 @@ const ParentSignUp = () => {
     birthCertificate: null,
     id: null
   });
+  const [modalMessage, setModalMessage] = useState('');
+  const [showModal, setShowModal] = useState(false);
+  const [showSuccessModal, setShowSuccessModal] = useState(false);
   const navigate = useNavigate();
+
+  const showError = (message) => {
+    setModalMessage(message);
+    setShowModal(true);
+  };
 
   const handleChange = (e) => {
     const { name, value, files } = e.target;
+
+    if (name === 'firstName' || name === 'lastName') {
+      const lettersOnly = value.replace(/[0-9]/g, '');
+      setFormData(prev => ({ ...prev, [name]: lettersOnly }));
+      return;
+    }
+
     if (files) {
       const file = files[0];
-      setFormData(prevState => ({
-        ...prevState,
+      setFormData(prev => ({
+        ...prev,
         [name]: file
       }));
 
       const reader = new FileReader();
       reader.onloadend = () => {
-        setPreview(prevState => ({
-          ...prevState,
+        setPreview(prev => ({
+          ...prev,
           [name]: reader.result
         }));
       };
       reader.readAsDataURL(file);
     } else {
-      setFormData(prevState => ({
-        ...prevState,
+      setFormData(prev => ({
+        ...prev,
         [name]: value
       }));
     }
@@ -55,21 +70,20 @@ const ParentSignUp = () => {
     if (step === 1) {
       const { firstName, lastName, email, password } = formData;
       if (!firstName || !lastName || !email || !password) {
-        alert('Please fill out all the fields.');
+        showError('Please fill out all the fields.');
         return;
       }
     }
     if (step === 2 && !formData.profilePicture) {
-      alert('Please upload your profile picture.');
+      showError('Please upload your profile picture.');
       return;
     }
     if (step === 3 && !formData.birthCertificate) {
-      alert('Please upload your childs birth certificate.');
+      showError('Please upload your child\'s birth certificate.');
       return;
     }
-  
     if (step === 4 && !formData.id) {
-      alert('Please upload your valid ID.');
+      showError('Please upload your valid ID.');
       return;
     }
     setStep(prevStep => prevStep + 1);
@@ -81,24 +95,72 @@ const ParentSignUp = () => {
 
   const handleSubmit = (e) => {
     e.preventDefault();
-
     const data = new FormData();
+  
     for (const key in formData) {
       data.append(key, formData[key]);
     }
-
+  
     axios.post('http://localhost:5000/parentRegister', data)
       .then(res => {
         console.log('Success:', res.data);
-        navigate('/sign-in');
+        setShowSuccessModal(true);
+  
+        // Auto-navigate to sign-in after 3 seconds
+        setTimeout(() => {
+          navigate('/sign-in');
+        }, 3000);
       })
       .catch(err => {
         console.error('Error:', err.response ? err.response.data : err.message);
+        showError('Registration failed. Please try again.');
       });
   };
+  
 
   return (
-    <div className="flex items-center justify-center">
+    <>
+      {showModal && (
+        <div className="fixed top-0 left-0 w-full h-full flex items-center justify-center bg-black bg-opacity-50 z-50">
+          <div className="bg-white rounded-lg shadow-lg p-6 max-w-sm text-center">
+            <h3 className="text-xl font-semibold text-red-600 mb-4">Notice</h3>
+            <p className="text-gray-700 mb-6">{modalMessage}</p>
+            <button
+              className="px-4 py-2 bg-maroon-700 text-yellow-300 rounded hover:bg-maroon-800"
+              onClick={() => setShowModal(false)}
+            >
+              Close
+            </button>
+          </div>
+        </div>
+      )}
+      {showSuccessModal && (
+  <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
+    <div className="bg-white rounded-2xl shadow-xl p-6 w-full max-w-md text-center">
+      <div className="mb-4">
+        <i className="fas fa-check-circle text-green-500 text-5xl"></i>
+      </div>
+      <h2 className="text-2xl font-bold text-gray-800 mb-2">Account Registered</h2>
+      <p className="text-gray-700 mb-4">
+        Your account has been successfully registered.<br />
+        Please wait for the admin approval.
+      </p>
+      <p className="text-sm text-gray-500 mb-2">
+        Redirecting to sign in...
+      </p>
+      <button
+        onClick={() => navigate('/sign-in')}
+        className="bg-blue-500 hover:bg-blue-600 text-white px-6 py-2 rounded-full transition duration-300"
+      >
+        Close
+      </button>
+    </div>
+  </div>
+)}
+
+
+      {/* Your existing JSX starts here */}
+      <div className="flex items-center justify-center">
       {step === 1 && (
         <div className="flex flex-col lg:flex-row items-center justify-center">
           <img src={signUpImage} alt="Sign Up" className="ml-32 mb-20 w-1/2 h-auto lg:mb-0 lg:mr-10" />
@@ -114,7 +176,7 @@ const ParentSignUp = () => {
                     id="firstName"
                     name="firstName"
                     placeholder="First Name"
-                    className="w-full p-3 bg-yellow-300 text-maroon-700 border-0 rounded-lg text-sm"
+                    className="w-full p-3 bg-white border-0 rounded-lg text-sm"
                     value={formData.firstName}
                     onChange={handleChange}
                     required
@@ -127,7 +189,7 @@ const ParentSignUp = () => {
                     id="lastName"
                     name="lastName"
                     placeholder="Last Name"
-                    className="w-full p-3 bg-yellow-300 text-maroon-700 border-0 rounded-lg text-sm"
+                    className="w-full p-3 bg-white  border-0 rounded-lg text-sm"
                     value={formData.lastName}
                     onChange={handleChange}
                     required
@@ -140,7 +202,7 @@ const ParentSignUp = () => {
                     id="email"
                     name="email"
                     placeholder="Email"
-                    className="w-full p-3 bg-yellow-300 text-maroon-700 border-0 rounded-lg text-sm"
+                    className="w-full p-3 bg-white  border-0 rounded-lg text-sm"
                     value={formData.email}
                     onChange={handleChange}
                     required
@@ -153,7 +215,7 @@ const ParentSignUp = () => {
                     id="password"
                     name="password"
                     placeholder="Password"
-                    className="w-full p-3 bg-yellow-300 text-maroon-700 border-0 rounded-lg text-sm"
+                    className="w-full p-3 bg-white  border-0 rounded-lg text-sm"
                     value={formData.password}
                     onChange={handleChange}
                     required
@@ -435,6 +497,7 @@ const ParentSignUp = () => {
       )}
            
     </div>
+    </>
   );
 };
 

@@ -29,8 +29,11 @@ import ApplicantsJobApps from "../components/ApplicantsJobApps";
 import ApplicantsCurrentJob from "../components/ApplicantsCurrentJob";
 import ApplicantsLevelingSystem from "../components/ApplicantsLevelingSystem";
 import ApplicantsFeedBack from "../components/ApplicantsFeedback";
+import ApplicantsJobPostings from "../components/ApplicantsJobPostings";
 import EmployerFeedBack from "../components/EmployerFeedback";
 import AdminManageTutor from "../components/AdminManageTutor";
+import AdminManageJobDismissal from "../components/AdminJobDismissal";
+import ParentFeedback from "../components/ParentFeedback";
 
 
 const router = createBrowserRouter([
@@ -69,6 +72,9 @@ const router = createBrowserRouter([
         {path: "applicantsFeedback", element: <ApplicantsFeedBack />},
         {path: "EmployerFeedBacks", element: <EmployerFeedBack />},
         {path: "AdminManageTutor", element: <AdminManageTutor />},
+        {path: "AdminJobDismissal", element: <AdminManageJobDismissal />},
+        {path: "ParentFeedback", element: < ParentFeedback />},
+        {path: "ApplicantsJobPostings", element: < ApplicantsJobPostings />},
         
 
       ]

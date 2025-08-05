@@ -19,15 +19,15 @@ const ApplicantSchema = new mongoose.Schema({
         required: true
     },
     profilePicture: {
-        type: String, // This will store the path or URL to the uploaded profile picture
+        type: String,
         required: true
     },
     cor: {
-        type: String, // This will store the path or URL to the uploaded COR
+        type: String,
         required: true
     },
     schoolId: {
-        type: String, // This will store the path or URL to the uploaded School ID
+        type: String,
         required: true
     },
     streetAddress: {
@@ -40,8 +40,16 @@ const ApplicantSchema = new mongoose.Schema({
     },
     status: {
         type: String,
-        enum: ['pending', 'approved', 'rejected'], // Restrict values to these statuses
-        default: 'pending' // Default status is 'pending' until approved by an admin
+        enum: ['pending', 'approved', 'rejected'],
+        default: 'pending'
+    },
+    experience: {
+        type: Number,
+        default: 0
+    },
+    rank: {
+        type: String,
+        default: 'Beginner'
     },
     createdAt: {
         type: Date,

@@ -1,61 +1,305 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
+import Cookies from 'js-cookie';
 import '@fortawesome/fontawesome-free/css/all.min.css';
+import axios from 'axios';
 
 const ParentAppList = () => {
+  const [pendingApplicants, setPendingApplicants] = useState([]);
+  const [selectedApplicant, setSelectedApplicant] = useState(null);
+  const [showTutorMenu, setShowTutorMenu] = useState(true);
+  const parentId = localStorage.getItem('parentId');
+  const token = Cookies.get('token') || localStorage.getItem('token');
+
+  useEffect(() => {
+    const fetchPendingApplicants = async () => {
+      if (!parentId) return;
+      try {
+        const response = await axios.get(`http://localhost:5000/api/tutorApplication/pending-applicants/${parentId}`, {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        });
+        setPendingApplicants(response.data);
+      } catch (error) {
+        console.error('Error fetching pending tutor applicants:', error);
+      }
+    };
+    fetchPendingApplicants();
+  }, [parentId, token]);
+
+  const handleViewProfile = async (applicantId) => {
+    try {
+      const response = await axios.get(`http://localhost:5000/api/applicant-profile/${applicantId}`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+      setSelectedApplicant(response.data);
+    } catch (error) {
+      console.error('Error fetching applicant profile:', error.response?.data || error.message);
+    }
+  };
+
+  const handleApprove = async (applicationId) => {
+    try {
+      const response = await axios.put(
+        `http://localhost:5000/api/tutorApplication/approve/${applicationId}`,
+        {},
+        {
+          headers: { Authorization: `Bearer ${token}` },
+        }
+      );
+      console.log('Application approved:', response.data);
+      setPendingApplicants((prev) => prev.filter((app) => app._id !== applicationId));
+    } catch (error) {
+      console.error('Error approving application:', error.response?.data || error.message);
+      alert(error.response?.data?.message || 'Failed to approve application');
+    }
+  };
+
+  const handleReject = async (applicationId) => {
+    if (!applicationId) return alert('Invalid application ID');
+    try {
+      const response = await axios.put(
+        `http://localhost:5000/api/tutor-applications/reject/${applicationId}`,
+        {},
+        {
+          headers: { Authorization: `Bearer ${token}` },
+        }
+      );
+      console.log('Application rejected:', response.data);
+      setPendingApplicants((prev) => prev.filter((app) => app._id !== applicationId));
+    } catch (error) {
+      console.error('Error rejecting application:', error.response?.data || error.message);
+    }
+  };
+
+  const handleCloseModal = () => {
+    setSelectedApplicant(null);
+  };
+
   return (
     <div className="flex justify-center">
- {/* Sidebar */}
- <div className="bg-gray-200 w-[280px] h-[950px] rounded-lg p-4 shadow-md">
-        <div className="flex items-center mb-8">
-          <i className="fas fa-home text-lg mr-2"></i>
-          <Link to ="/ParentDb" className="text-lg font-medium mr-2 ml-2">Dashboard</Link>
-        </div>
-        <div className="flex items-center mb-8">
-          <i className="fas fa-user text-lg mr-2"></i>
-          <Link to ="/ParentMyAcc" className="text-lg font-medium mr-2 ml-2">My Account </Link>
-        </div>
-        <div className="flex items-center mb-8">
-          <i className="fas fa-users text-lg mr-2"></i>
-          <Link to ="/ParentTutors" className="text-lg font-medium mr-2 ml-2">Current Hired Tutors</Link>
-        </div>
-        <div className="flex items-center mb-8">
-          <i className="fas fa-users text-lg mr-2"></i>
-          <Link to ="/ParentAppList" className="text-lg font-medium mr-2 ml-2">Applicant List</Link>
-        </div>
-        <div className="flex items-center mb-8">
-          <i className="fas fa-briefcase text-lg mr-2"></i>
-          <Link to ="/ParentPostTutor" className="text-lg font-medium mr-2 ml-2">Post Tutor</Link>
-        </div>
-        <div className="flex items-center mb-8">
-         <i className="fas fa-comments text-lg mr-2"></i>
-        <Link to ="" className="text-lg font-medium ml-2">Feedbacks</Link>
+      {/* Sidebar */}
+      <div className="bg-gray-200 w-[290px] h-[950px] p-4 shadow-md">
+  <Link
+    to="/ParentDashboard"
+    className={`flex items-center mb-4 px-4 py-3 rounded-lg cursor-pointer ${
+      location.pathname === '/ParentDashboard'
+        ? 'bg-gold shadow-md'
+        : 'hover:bg-gray-300'
+    }`}
+  >
+    <i className="fas fa-home text-lg mr-2"></i>
+    <span className="text-lg font-bold">Dashboard</span>
+  </Link>
+
+  <Link
+    to="/ParentMyAcc"
+    className={`flex items-center mb-4 px-4 py-3 rounded-lg cursor-pointer ${
+      location.pathname === '/ParentMyAcc'
+        ? 'bg-gold shadow-md'
+        : 'hover:bg-gray-300'
+    }`}
+  >
+    <i className="fas fa-user text-lg mr-2"></i>
+    <span className="text-lg font-bold">My Account</span>
+  </Link>
+
+  {/* Dropdown for Tutors */}
+  <div className="mb-4">
+    <div
+      className="flex items-center justify-between px-4 py-3 rounded-lg cursor-pointer hover:bg-gray-300"
+      onClick={() => setShowTutorMenu(!showTutorMenu)}
+    >
+      <div className="flex items-center">
+        <i className="fas fa-users text-lg mr-2"></i>
+        <span className="text-lg font-bold">Tutors</span>
+      </div>
+      <i
+        className={`fas fa-chevron-${showTutorMenu ? 'up' : 'down'} text-gray-700 transition-transform duration-200`}
+      ></i>
+    </div>
+
+    {showTutorMenu && (
+      <div className="ml-6 mt-2">
+        <Link
+          to="/ParentTutors"
+          className={`flex items-center mb-2 px-4 py-3 rounded-lg cursor-pointer ${
+            location.pathname === '/ParentTutors'
+              ? 'bg-gold shadow-md'
+              : 'hover:bg-gray-300'
+          }`}
+        >
+          <i className="fas fa-user-check text-base mr-2"></i>
+          <span className="text-base font-bold">Current Hired Tutors</span>
+        </Link>
+
+        <Link
+          to="/ParentAppList"
+          className={`flex items-center px-4 py-3 rounded-lg cursor-pointer ${
+            location.pathname === '/ParentAppList'
+              ? 'bg-gold shadow-md'
+              : 'hover:bg-gray-300'
+          }`}
+        >
+          <i className="fas fa-user-clock text-base mr-2"></i>
+          <span className="text-base font-bold">Applicant List</span>
+        </Link>
+      </div>
+    )}
+  </div>
+
+  <Link
+    to="/ParentPostTutor"
+    className={`flex items-center mb-4 px-4 py-3 rounded-lg cursor-pointer ${
+      location.pathname === '/ParentPostTutor'
+        ? 'bg-gold shadow-md'
+        : 'hover:bg-gray-300'
+    }`}
+  >
+    <i className="fas fa-briefcase text-lg mr-2"></i>
+    <span className="text-lg font-bold">Post Tutor</span>
+  </Link>
+
+  <Link
+    to="/ParentFeedback"
+    className={`flex items-center mb-4 px-4 py-3 rounded-lg cursor-pointer ${
+      location.pathname === '/ParentFeedback'
+        ? 'bg-gold shadow-md'
+        : 'hover:bg-gray-300'
+    }`}
+  >
+    <i className="fas fa-comments text-lg mr-2"></i>
+    <span className="text-lg font-bold">Feedbacks</span>
+  </Link>
+</div>
+      {/* Main Content */}
+      <div className="flex-1 flex flex-col items-center mb-48 p-4">
+        <div className="mt-10 w-full">
+          <div className="w-full flex justify-between items-center mb-3">
+            <p className="text-3xl font-bold ml-1">Tutor Applicants List</p>
+          </div>
+
+          <table className="table-auto w-full bg-white shadow-md rounded-lg overflow-hidden">
+            <thead className="bg-yellow-300">
+              <tr>
+                <th className="px-4 py-2 text-left">FIRST NAME</th>
+                <th className="px-4 py-2 text-left">LAST NAME</th>
+                <th className="px-4 py-2 text-left">EMAIL</th>
+                <th className="px-4 py-2 text-left">TUTOR TYPE</th>
+                <th className="px-4 py-2 text-left">VIEW PROFILE</th>
+                <th className="px-4 py-2 text-left">ACTION</th>
+              </tr>
+            </thead>
+            <tbody>
+              {pendingApplicants
+                .filter((applicant) => applicant.status !== 'rejected')
+                .map((applicant) => (
+                  <tr key={applicant._id} className="hover:bg-gray-100">
+                    <td className="border px-4 py-2">{applicant.applicantId?.firstName || 'N/A'}</td>
+                    <td className="border px-4 py-2">{applicant.applicantId?.lastName || 'N/A'}</td>
+                    <td className="border px-4 py-2">{applicant.applicantId?.email || 'N/A'}</td>
+                    <td className="border px-4 py-2">
+                      {applicant.tutorPostId ? (
+                        <>
+                          <p><strong>Type:</strong> {applicant.tutorPostId.tutorType}</p>
+                          <p><strong>Schedule:</strong> {applicant.tutorPostId.schedule}</p>
+                          <p><strong>Salary:</strong> {applicant.tutorPostId.salary}</p>
+                        </>
+                      ) : (
+                        <p>N/A</p>
+                      )}
+                    </td>
+                    <td className="border px-4 py-2 text-center">
+                      <button
+                        className="text-blue-500 font-semibold"
+                        onClick={() => handleViewProfile(applicant.applicantId?._id)}
+                      >
+                        View Profile
+                      </button>
+                    </td>
+                    <td className="border px-4 py-2 text-center">
+                      <button
+                        className="text-green-500 font-semibold mr-2"
+                        onClick={() => handleApprove(applicant._id)}
+                      >
+                        Approve
+                      </button>
+                      <button
+                        className="text-red-500 font-semibold"
+                        onClick={() => handleReject(applicant._id)}
+                      >
+                        Reject
+                      </button>
+                    </td>
+                  </tr>
+                ))}
+            </tbody>
+          </table>
         </div>
       </div>
 
-      {/* Main Content */}
-      <div className="flex-1 flex flex-col items-center mb-48 p-4">
-        <div className="mt-6 w-full">
-          <div className="w-full flex justify-between items-center mb-3">
-            <p className="text-3xl font-bold ml-1">Applicants List</p>
-            <div className="relative mr-4">
-              <input
-                type="text"
-                placeholder="Search..."
-                className="border border-black rounded-lg px-4 py-2 w-[300px] outline-none focus:ring-2 focus:ring-blue-500"
-              />
-              <i className="fas fa-search absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-600"></i>
+      {/* Profile Modal */}
+      {selectedApplicant && (
+        <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
+          <div className="bg-white p-8 rounded-lg shadow-lg w-[700px] h-[500px] relative flex">
+            <div className="w-1/2 flex flex-col items-center pr-4 border-r border-gray-200">
+              <h2 className="text-2xl font-bold mb-4 text-gray-800">Applicant Profile</h2>
+              {selectedApplicant.profilePicture ? (
+                <img
+                  src={`http://localhost:5000/${selectedApplicant.profilePicture}`}
+                  alt="Profile"
+                  className="w-32 h-32 rounded-full border-2 border-yellow-400 shadow-md mb-4"
+                />
+              ) : (
+                <div className="w-32 h-32 flex items-center justify-center rounded-full bg-gray-200 text-gray-400 text-xl mb-4">
+                  No Image
+                </div>
+              )}
+              <div className="text-left space-y-2 w-full px-6">
+                <p className="text-gray-700"><strong>First Name:</strong> <span className="font-medium">{selectedApplicant.firstName || 'N/A'}</span></p>
+                <p className="text-gray-700"><strong>Last Name:</strong> <span className="font-medium">{selectedApplicant.lastName || 'N/A'}</span></p>
+                <p className="text-gray-700"><strong>Email:</strong> <span className="font-medium">{selectedApplicant.email || 'N/A'}</span></p>
+                <p className="text-gray-700"><strong>Street Address:</strong> <span className="font-medium">{selectedApplicant.streetAddress || 'N/A'}</span></p>
+              </div>
+            </div>
+            <div className="w-1/2 pl-4 flex flex-col items-center justify-between space-y-6">
+              <div className="text-gray-700 text-center">
+                <p className="font-bold mb-1">Certificate of Registration (COR):</p>
+                {selectedApplicant.cor ? (
+                  <img
+                    src={`http://localhost:5000/${selectedApplicant.cor}`}
+                    alt="COR"
+                    className="w-48 h-36 object-cover rounded-lg shadow-md border"
+                  />
+                ) : (
+                  <p className="text-sm text-gray-500">No COR Available</p>
+                )}
+              </div>
+              <div className="text-gray-700 text-center">
+                <p className="font-bold mb-1">School ID:</p>
+                {selectedApplicant.schoolId ? (
+                  <img
+                    src={`http://localhost:5000/${selectedApplicant.schoolId}`}
+                    alt="School ID"
+                    className="w-48 h-36 object-cover rounded-lg shadow-md border"
+                  />
+                ) : (
+                  <p className="text-sm text-gray-500">No School ID Available</p>
+                )}
+              </div>
+              <button
+                onClick={handleCloseModal}
+                className="bg-yellow-400 hover:bg-yellow-500 text-white font-semibold py-2 px-6 rounded shadow-md"
+              >
+                Close
+              </button>
             </div>
           </div>
-          <h2 className="mb-20 mr-3 font-bold text-base text-black bg-yellow-300 py-2 px-4 rounded w-[1000px] flex justify-between">
-            <span className="mr-8">FIRST NAME</span>
-            <span className="mr-9">LAST NAME</span>
-            <span className="mr-6">EMAIL</span>
-            <span className="mr-6">CONTACT NUMBER</span>
-            <span className="mr-6">ACTION</span>
-          </h2>
         </div>
-      </div>
+      )}
     </div>
   );
 };

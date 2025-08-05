@@ -51,26 +51,105 @@ router.get('/employer', async (req, res) => {
   }
 });
 
-router.post('/create', async (req, res) => {
-    try {
-      const { employerId, address, position, schedule, salaryRate } = req.body;
-  
-      // Check if required fields are present
-      if (!employerId || !address || !position || !schedule || !salaryRate) {
-        return res.status(400).json({ error: 'All fields are required.' });
-      }
-  
-      const newJob = new JobPost({ employerId, address, position, schedule, salaryRate });
-      await newJob.save();
-  
-      res.status(201).json({ message: 'Job post created and is pending approval.', job: newJob });
-    } catch (error) {
-      console.error('Error creating job post:', error); // Log the error
-      res.status(500).json({ error: 'Failed to create job post.', details: error.message });
-    }
-  });
+// router.post('/create', async (req, res) => {
+//   try {
+//     const { employerId, address, position, schedule, salaryRate, quota } = req.body;
 
-// Get all pending job posts (For admin approval)
+//     // Validate all required fields including quota
+//     if (!employerId || !address || !position || !schedule || !salaryRate || !quota) {
+//       return res.status(400).json({ error: 'All fields are required including quota.' });
+//     }
+
+//     // Optionally validate quota is a positive number
+//     if (typeof quota !== 'number' && typeof quota !== 'string') {
+//       return res.status(400).json({ error: 'Quota must be a number.' });
+//     }
+
+//     const quotaNumber = Number(quota);
+//     if (isNaN(quotaNumber) || quotaNumber <= 0) {
+//       return res.status(400).json({ error: 'Quota must be a positive number.' });
+//     }
+
+//     const newJob = new JobPost({
+//       employerId,
+//       address,
+//       position,
+//       schedule,
+//       salaryRate,
+//       quota: quotaNumber,
+//       status: 'pending'  // or default status
+//     });
+
+//     await newJob.save();
+
+//     res.status(201).json({ message: 'Job post created and is pending approval.', job: newJob });
+//   } catch (error) {
+//     console.error('Error creating job post:', error);
+//     res.status(500).json({ error: 'Failed to create job post.', details: error.message });
+//   }
+// });
+
+router.post('/create', async (req, res) => {
+  try {
+    const { employerId, address, position, schedule, salaryRate, salaryRateType, quota } = req.body;
+
+    if (!employerId || !address || !position || !schedule || !salaryRate || !quota) {
+      return res.status(400).json({ error: 'All fields are required including quota.' });
+    }
+
+    const quotaNumber = Number(quota);
+    if (isNaN(quotaNumber) || quotaNumber <= 0) {
+      return res.status(400).json({ error: 'Quota must be a positive number.' });
+    }
+
+    // ✅ Fix: store result in a variable
+    const existingJob = await JobPost.findOne({
+      employerId,
+      position,
+      schedule,
+      status: { $in: ['approved', 'pending'] }
+    });
+
+    if (existingJob) {
+      return res.status(409).json({
+        error: 'You already have a job post with this position and schedule.',
+      });
+    }
+
+    const newJob = new JobPost({
+      employerId,
+      address,
+      position,
+      schedule,
+      salaryRate,
+      salaryRateType: salaryRateType || 'per hour',
+      quota: quotaNumber,
+      status: 'pending',
+    });
+
+    await newJob.save();
+
+    const employer = await Employer.findById(employerId);
+    if (employer && !employer.savedPositions.includes(position)) {
+      employer.savedPositions.push(position);
+      await employer.save();
+    }
+
+    res.status(201).json({
+      message: 'Job post created and is pending approval.',
+      job: newJob,
+    });
+  } catch (error) {
+    console.error('Error creating job post:', error);
+    res.status(500).json({
+      error: 'Failed to create job post.',
+      details: error.message,
+    });
+  }
+});
+
+
+
 router.get('/pending', async (req, res) => {
   try {
     const pendingJobs = await JobPost.find({ status: 'pending' });
@@ -87,23 +166,24 @@ router.get('/pending', async (req, res) => {
   }
 });
 
-
-
-
-
-// Approve or reject a job post (Admin action)
 router.put('/status/:id', async (req, res) => {
+  const { status } = req.body;
+  const { id } = req.params;
+
+  if (!status) {
+    return res.status(400).json({ message: 'Status is required' });
+  }
+
+  // Optional: you can restrict allowed statuses here
+  const allowedStatuses = ['approved', 'rejected', 'dismissed', 'pending', 'pending_dismissal'];
+  if (!allowedStatuses.includes(status)) {
+    return res.status(400).json({ message: 'Invalid status provided.' });
+  }
+
   try {
-    const { status } = req.body;
-    const { id } = req.params;
-
-    if (!['approved', 'rejected'].includes(status)) {
-      return res.status(400).json({ error: 'Invalid status.' });
-    }
-
     const updatedJob = await JobPost.findByIdAndUpdate(id, { status }, { new: true });
     if (!updatedJob) {
-      return res.status(404).json({ error: 'Job post not found.' });
+      return res.status(404).json({ message: 'Job post not found.' });
     }
 
     res.status(200).json({ message: 'Job status updated.', job: updatedJob });
@@ -111,6 +191,7 @@ router.put('/status/:id', async (req, res) => {
     res.status(500).json({ error: 'Failed to update job status.' });
   }
 });
+
 
 
 router.get('/pending-applicants/:employerId', async (req, res) => {
@@ -126,6 +207,45 @@ router.get('/pending-applicants/:employerId', async (req, res) => {
     res.status(500).json({ message: 'Error fetching applicants', error });
   }
 });
+
+router.put('/dismiss/:id', async (req, res) => {
+  const { id } = req.params;
+  const { reason } = req.body;
+
+  if (!reason) {
+    return res.status(400).json({ message: 'Dismissal reason is required.' });
+  }
+
+  try {
+    const job = await JobPost.findById(id);
+    if (!job) {
+      return res.status(404).json({ message: 'Job post not found.' });
+    }
+
+    job.status = 'pending_dismissal';  // <-- new status to indicate admin review needed
+    job.dismissalReason = reason;
+    await job.save();
+
+    res.json({ message: 'Dismissal request sent, waiting for admin approval.', job });
+  } catch (error) {
+    console.error('Error requesting dismissal:', error);
+    res.status(500).json({ message: 'Failed to request dismissal.' });
+  }
+});
+
+// Get all job posts that are pending dismissal (For admin review)
+router.get('/pending-dismissal', async (req, res) => {
+  try {
+    const jobs = await JobPost.find({ status: 'pending_dismissal' })
+      .populate('employerId', 'businessName businessImage');
+
+    res.status(200).json(jobs);
+  } catch (error) {
+    console.error('Error fetching jobs pending dismissal:', error);
+    res.status(500).json({ message: 'Server error: ' + error.message });
+  }
+});
+
 
 
 
