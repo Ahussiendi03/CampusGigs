@@ -43,26 +43,62 @@ router.get('/users/pending', async (req, res) => {
 });
 
 // Update user status
+// router.put('/registrations/status/:id', async (req, res) => {
+//     try {
+//         const { status } = req.body;
+//         const { id } = req.params;
+
+//         if (!['approved', 'rejected', 'pending'].includes(status)) {
+//             return res.status(400).json({ message: 'Invalid status value.' });
+//         }
+
+//         let updatedUser = await EmployerModel.findByIdAndUpdate(id, { status }, { new: true });
+//         if (!updatedUser) updatedUser = await ApplicantModel.findByIdAndUpdate(id, { status }, { new: true });
+//         if (!updatedUser) updatedUser = await ParentModel.findByIdAndUpdate(id, { status }, { new: true });
+
+//         if (!updatedUser) return res.status(404).json({ message: 'User not found.' });
+
+//         res.json({ message: 'Status updated successfully.', user: updatedUser });
+//     } catch (err) {
+//         console.error('Error updating status:', err);
+//         res.status(500).json({ message: 'Failed to update status.', error: err.message });
+//     }
+// });
+
 router.put('/registrations/status/:id', async (req, res) => {
     try {
-        const { status } = req.body;
-        const { id } = req.params;
-
-        if (!['approved', 'rejected', 'pending'].includes(status)) {
-            return res.status(400).json({ message: 'Invalid status value.' });
-        }
-
-        let updatedUser = await EmployerModel.findByIdAndUpdate(id, { status }, { new: true });
-        if (!updatedUser) updatedUser = await ApplicantModel.findByIdAndUpdate(id, { status }, { new: true });
-        if (!updatedUser) updatedUser = await ParentModel.findByIdAndUpdate(id, { status }, { new: true });
-
-        if (!updatedUser) return res.status(404).json({ message: 'User not found.' });
-
-        res.json({ message: 'Status updated successfully.', user: updatedUser });
+      const { status, reason } = req.body;
+      const { id } = req.params;
+  
+      if (!['approved', 'rejected', 'pending'].includes(status)) {
+        return res.status(400).json({ message: 'Invalid status value.' });
+      }
+  
+      // 🔴 If rejected, reason is required
+      if (status === 'rejected' && (!reason || reason.trim() === "")) {
+        return res.status(400).json({ message: 'Rejection reason is required when rejecting a user.' });
+      }
+  
+      let updateData = { status };
+  
+      if (status === 'rejected') {
+        updateData.rejectionReason = reason.trim();
+      } else {
+        updateData.rejectionReason = ''; // clear if approved or pending
+      }
+  
+      let updatedUser = await EmployerModel.findByIdAndUpdate(id, updateData, { new: true });
+      if (!updatedUser) updatedUser = await ApplicantModel.findByIdAndUpdate(id, updateData, { new: true });
+      if (!updatedUser) updatedUser = await ParentModel.findByIdAndUpdate(id, updateData, { new: true });
+  
+      if (!updatedUser) return res.status(404).json({ message: 'User not found.' });
+  
+      res.json({ message: `Status updated to ${status}.`, user: updatedUser });
     } catch (err) {
-        console.error('Error updating status:', err);
-        res.status(500).json({ message: 'Failed to update status.', error: err.message });
+      console.error('Error updating status:', err);
+      res.status(500).json({ message: 'Failed to update status.', error: err.message });
     }
-});
+  });
+  
 
 module.exports = router;

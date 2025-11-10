@@ -1,7 +1,8 @@
-import React, { useEffect, useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
-import axios from 'axios';
-import '@fortawesome/fontawesome-free/css/all.min.css';
+import React, { useEffect, useState } from "react";
+import { Link, useNavigate } from "react-router-dom";
+import axios from "axios";
+import "@fortawesome/fontawesome-free/css/all.min.css";
+import { Bell } from "lucide-react";
 
 const EmployerDb = () => {
   const navigate = useNavigate();
@@ -9,25 +10,42 @@ const EmployerDb = () => {
   const [pendingApplicants, setPendingApplicants] = useState([]);
   const [approvedApplicants, setApprovedApplicants] = useState([]);
   const [jobPosts, setJobPosts] = useState([]);
+  const [employerData, setEmployerData] = useState({});
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const handleOpenModal = () => setIsModalOpen(true);
+  const handleCloseModal = () => setIsModalOpen(false);
 
-  const employerId = localStorage.getItem('employerId');
-
+  const employerId = localStorage.getItem("employerId");
 
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const pendingRes = await axios.get(`http://localhost:5000/api/applications/pending-applicants/${employerId}`);
+        const pendingRes = await axios.get(
+          `http://localhost:5000/api/applications/pending-applicants/${employerId}`
+        );
         setPendingApplicants(pendingRes.data);
 
-        const approvedRes = await axios.get(`http://localhost:5000/api/applications/approved-applicants/${employerId}`);
+        const approvedRes = await axios.get(
+          `http://localhost:5000/api/applications/approved-applicants/${employerId}`
+        );
         setApprovedApplicants(approvedRes.data);
 
-        const jobRes = await axios.get('http://localhost:5000/api/jobposts/employer', {
-          params: { employerId, status: 'approved' },
-        });
+        const jobRes = await axios.get(
+          "http://localhost:5000/api/jobposts/employer",
+          {
+            params: { employerId, status: "approved" },
+          }
+        );
         setJobPosts(jobRes.data);
+
+        // 🔹 Changed this part to use /me
+        const employerRes = await axios.get(
+          "http://localhost:5000/api/employer/me",
+          { withCredentials: true }
+        );
+        setEmployerData(employerRes.data);
       } catch (error) {
-        console.error('Dashboard data fetch error:', error);
+        console.error("Dashboard data fetch error:", error);
       }
     };
 
@@ -36,114 +54,243 @@ const EmployerDb = () => {
     }
   }, [employerId]);
 
+  let statusMessage = "";
+  if (employerData?.status === "rejected") {
+    statusMessage = "Sorry, your account was rejected.";
+  } else if (employerData?.status !== "approved") {
+    statusMessage = "Your account is not approved yet.";
+  } else {
+    statusMessage = "Your account is approved!";
+  }
+
   return (
     <div className="flex justify-center bg-gray-50 min-h-screen">
       {/* Sidebar */}
       <div className="bg-gray-200 w-[290px] h-[950px] p-4 shadow-md">
-  {/* Dashboard */}
-  <Link
-    to="/EmployerDb"
-    className={`flex items-center mb-4 px-4 py-3 rounded-lg cursor-pointer ${
-      location.pathname === '/EmployerDb'
-        ? 'bg-gold shadow-md'
-        : 'hover:bg-gray-300'
-    }`}
-  >
-    <i className="fas fa-home text-lg mr-2"></i>
-    <span className="text-lg font-bold">Dashboard</span>
-  </Link>
-
-  {/* My Account */}
-  <Link
-    to="/EmployerMyAcc"
-    className={`flex items-center mb-4 px-4 py-3 rounded-lg cursor-pointer ${
-      location.pathname === '/EmployerMyAcc'
-        ? 'bg-gold shadow-md'
-        : 'hover:bg-gray-300'
-    }`}
-  >
-    <i className="fas fa-user text-lg mr-2"></i>
-    <span className="text-lg font-bold">My Account</span>
-  </Link>
-
-  {/* Applicants Dropdown */}
-  <div className="mb-4">
-    <div
-      className="flex items-center justify-between px-4 py-3 rounded-lg cursor-pointer hover:bg-gray-300"
-      onClick={() => setShowApplicantMenu(!showApplicantMenu)}
-    >
-      <div className="flex items-center">
-        <i className="fas fa-users text-lg mr-2"></i>
-        <span className="text-lg font-bold">Applicants</span>
-      </div>
-      <i
-        className={`fas fa-chevron-${showApplicantMenu ? 'up' : 'down'} text-gray-700 transition-transform duration-200`}
-      ></i>
-    </div>
-
-    {/* Dropdown Menu Items */}
-    {showApplicantMenu && (
-      <div className="ml-6 mt-2">
+        {/* Dashboard */}
         <Link
-          to="/EmployerStaffs"
-          className={`flex items-center mb-2 px-4 py-3 rounded-lg cursor-pointer ${
-            location.pathname === '/EmployerStaffs'
-              ? 'bg-gold shadow-md'
-              : 'hover:bg-gray-300'
+          to="/EmployerDb"
+          className={`flex items-center mb-4 px-4 py-3 rounded-lg cursor-pointer ${
+            location.pathname === "/EmployerDb"
+              ? "bg-gold shadow-md"
+              : "hover:bg-gray-300"
           }`}
         >
-          <i className="fas fa-user-check text-base mr-2"></i>
-          <span className="text-base font-bold">Current Hired Staffs</span>
+          <i className="fas fa-home text-lg mr-2"></i>
+          <span className="text-lg font-bold">Dashboard</span>
         </Link>
 
+        {/* My Account */}
         <Link
-          to="/EmployerAppList"
-          className={`flex items-center px-4 py-3 rounded-lg cursor-pointer ${
-            location.pathname === '/EmployerAppList'
-              ? 'bg-gold shadow-md'
-              : 'hover:bg-gray-300'
+          to="/EmployerMyAcc"
+          className={`flex items-center mb-4 px-4 py-3 rounded-lg cursor-pointer ${
+            location.pathname === "/EmployerMyAcc"
+              ? "bg-gold shadow-md"
+              : "hover:bg-gray-300"
           }`}
         >
-          <i className="fas fa-user-clock text-base mr-2"></i>
-          <span className="text-base font-bold">Applicant List</span>
+          <i className="fas fa-user text-lg mr-2"></i>
+          <span className="text-lg font-bold">My Account</span>
+        </Link>
+
+        {/* Applicants Dropdown */}
+        <div className="mb-4">
+          <div
+            className="flex items-center justify-between px-4 py-3 rounded-lg cursor-pointer hover:bg-gray-300"
+            onClick={() => setShowApplicantMenu(!showApplicantMenu)}
+          >
+            <div className="flex items-center">
+              <i className="fas fa-users text-lg mr-2"></i>
+              <span className="text-lg font-bold">Applicants</span>
+            </div>
+            <i
+              className={`fas fa-chevron-${
+                showApplicantMenu ? "up" : "down"
+              } text-gray-700 transition-transform duration-200`}
+            ></i>
+          </div>
+
+          {/* Dropdown Menu Items */}
+          {showApplicantMenu && (
+            <div className="ml-6 mt-2">
+              <Link
+                to="/EmployerStaffs"
+                className={`flex items-center mb-2 px-4 py-3 rounded-lg cursor-pointer ${
+                  location.pathname === "/EmployerStaffs"
+                    ? "bg-gold shadow-md"
+                    : "hover:bg-gray-300"
+                }`}
+              >
+                <i className="fas fa-user-check text-base mr-2"></i>
+                <span className="text-base font-bold">
+                  Current Hired Staffs
+                </span>
+              </Link>
+
+              <Link
+                to="/EmployerAppList"
+                className={`flex items-center px-4 py-3 rounded-lg cursor-pointer ${
+                  location.pathname === "/EmployerAppList"
+                    ? "bg-gold shadow-md"
+                    : "hover:bg-gray-300"
+                }`}
+              >
+                <i className="fas fa-user-clock text-base mr-2"></i>
+                <span className="text-base font-bold">Applicant List</span>
+              </Link>
+            </div>
+          )}
+        </div>
+
+        {/* Post Job */}
+        <Link
+          to="/EmployerJobPost"
+          className={`flex items-center mb-4 px-4 py-3 rounded-lg cursor-pointer ${
+            location.pathname === "/EmployerJobPost"
+              ? "bg-gold shadow-md"
+              : "hover:bg-gray-300"
+          }`}
+        >
+          <i className="fas fa-briefcase text-lg mr-2"></i>
+          <span className="text-lg font-bold">Post Job</span>
+        </Link>
+
+        {/* Feedbacks */}
+        <Link
+          to="/EmployerFeedbacks"
+          className={`flex items-center mb-4 px-4 py-3 rounded-lg cursor-pointer ${
+            location.pathname === "/EmployerFeedbacks"
+              ? "bg-gold shadow-md"
+              : "hover:bg-gray-300"
+          }`}
+        >
+          <i className="fas fa-comments text-lg mr-2"></i>
+          <span className="text-lg font-bold">Feedbacks</span>
         </Link>
       </div>
-    )}
-  </div>
-
-  {/* Post Job */}
-  <Link
-    to="/EmployerJobPost"
-    className={`flex items-center mb-4 px-4 py-3 rounded-lg cursor-pointer ${
-      location.pathname === '/EmployerJobPost'
-        ? 'bg-gold shadow-md'
-        : 'hover:bg-gray-300'
-    }`}
-  >
-    <i className="fas fa-briefcase text-lg mr-2"></i>
-    <span className="text-lg font-bold">Post Job</span>
-  </Link>
-
-  {/* Feedbacks */}
-  <Link
-    to="/EmployerFeedbacks"
-    className={`flex items-center mb-4 px-4 py-3 rounded-lg cursor-pointer ${
-      location.pathname === '/EmployerFeedbacks'
-        ? 'bg-gold shadow-md'
-        : 'hover:bg-gray-300'
-    }`}
-  >
-    <i className="fas fa-comments text-lg mr-2"></i>
-    <span className="text-lg font-bold">Feedbacks</span>
-  </Link>
-</div>
 
       {/* Main Content */}
       <div className="flex-1 flex flex-col items-center justify-start mb-48 p-8 max-w-[1100px]">
         <div className="flex justify-between items-center w-full mb-6">
-          <p className="text-3xl font-extrabold text-gray-800">
-            Hello, Welcome to MSU CampusGigs!
-          </p>
+          <div className="flex items-center space-x-4">
+            {employerData?.profilePicture && (
+              <img
+                src={`http://localhost:5000/${employerData.profilePicture}`}
+                alt="Profile"
+                className="w-20 h-20 object-cover border rounded-full"
+              />
+            )}
+            <p className="text-3xl font-extrabold text-gray-800">
+              {employerData?.firstName}{" "}
+              {employerData?.role && `(${employerData.role})`}
+            </p>
+
+            {/* Notification Bell */}
+            <div className="relative">
+              <button
+                onClick={handleOpenModal}
+                className="p-2 rounded-full hover:bg-gray-100 transition"
+              >
+                <Bell className="w-9 h-9 text-gray-700" />
+              </button>
+
+              {/* Badge Logic */}
+              {employerData?.status !== "approved" && (
+                <span className="absolute top-1 right-1 flex items-center justify-center w-5 h-5 bg-red-500 text-white text-xs font-bold rounded-full">
+                  1
+                </span>
+              )}
+            </div>
+          </div>
+
+          {/* Modal */}
+          {isModalOpen && (
+            <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
+              <div className="bg-white rounded-xl shadow-2xl w-96 transform transition-all scale-100 animate-fadeIn">
+                {/* Gradient Header */}
+                <div className="bg-gradient-to-r from-blue-500 to-purple-600 rounded-t-xl px-5 py-4 flex items-center space-x-3">
+                  <span className="text-2xl">
+                    {employerData?.status === "approved" && "✅"}
+                    {employerData?.status === "rejected" && "❌"}
+                    {employerData?.status !== "approved" &&
+                      employerData?.status !== "rejected" &&
+                      "⚠️"}
+                  </span>
+                  <h2 className="text-white text-lg font-semibold">
+                    Account Status
+                  </h2>
+                </div>
+
+                {/* Content */}
+                <div className="p-6">
+                  {/* Show rejection reason if rejected */}
+                  {employerData?.status === "rejected" ? (
+                    <>
+                      <p className="text-gray-700 mb-4 leading-relaxed">
+                        Your account has been{" "}
+                        <span className="font-semibold text-red-500">
+                          rejected
+                        </span>
+                        .
+                      </p>
+
+                      {/* Rejection reason */}
+                      <div className="bg-red-50 p-4 rounded-lg border border-red-200 mb-4">
+                        <p className="text-sm text-gray-800">
+                          <span className="font-semibold">Reason:</span>{" "}
+                          {employerData?.rejectionReason ||
+                            "No reason provided."}
+                        </p>
+                      </div>
+
+                      <p className="text-sm text-gray-500 italic animate-pulse">
+                        Please review the reason and try registering again.
+                      </p>
+                    </>
+                  ) : employerData?.status !== "approved" ? (
+                    <>
+                      <p className="text-gray-700 mb-4 leading-relaxed">
+                        Please contact us at the email below so that we can
+                        notify you if your account is approved.
+                      </p>
+
+                      {/* Contact us section */}
+                      <div className="bg-blue-50 p-4 rounded-lg border border-blue-200 flex items-center space-x-3 mb-4">
+                        <div className="bg-blue-100 p-2 rounded-full">📩</div>
+                        <div>
+                          <p className="text-sm text-gray-700">Email us:</p>
+                          <a
+                            href="mailto:support@campusgigs.com"
+                            className="text-blue-600 font-medium hover:underline"
+                          >
+                            support@campusgigs.com
+                          </a>
+                        </div>
+                      </div>
+
+                      <p className="text-sm text-gray-500 italic animate-pulse">
+                        Stay tuned — we’ll keep you posted!
+                      </p>
+                    </>
+                  ) : (
+                    <p className="text-gray-700 mb-4 leading-relaxed">
+                      {statusMessage}
+                    </p>
+                  )}
+
+                  {/* Close Button */}
+                  <div className="mt-6 flex justify-end">
+                    <button
+                      onClick={handleCloseModal}
+                      className="px-4 py-2 bg-gradient-to-r from-blue-500 to-purple-600 text-white rounded-lg shadow hover:from-blue-600 hover:to-purple-700 transition"
+                    >
+                      Close
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
         </div>
 
         <div className="flex justify-start mb-8 w-full space-x-16 px-2">
@@ -151,7 +298,9 @@ const EmployerDb = () => {
             <i className="fas fa-users text-maroon-700 text-6xl"></i>
             <div>
               <p className="text-lg font-medium text-maroon-700">Applicants</p>
-              <p className="text-3xl font-extrabold">{pendingApplicants.length}</p>
+              <p className="text-3xl font-extrabold">
+                {pendingApplicants.length}
+              </p>
             </div>
           </div>
           <div className="flex items-center space-x-4 bg-yellow-100 rounded-lg px-6 py-4 shadow-md">
@@ -164,8 +313,12 @@ const EmployerDb = () => {
           <div className="flex items-center space-x-4 bg-yellow-100 rounded-lg px-6 py-4 shadow-md">
             <i className="fas fa-user-check text-maroon-700 text-6xl"></i>
             <div>
-              <p className="text-lg font-medium text-maroon-700">Current Staffs</p>
-              <p className="text-3xl font-extrabold">{approvedApplicants.length}</p>
+              <p className="text-lg font-medium text-maroon-700">
+                Current Staffs
+              </p>
+              <p className="text-3xl font-extrabold">
+                {approvedApplicants.length}
+              </p>
             </div>
           </div>
         </div>
@@ -173,8 +326,13 @@ const EmployerDb = () => {
         {/* Current Hired Staffs Table */}
         <section className="mb-12 w-full">
           <div className="flex justify-between items-center mb-4">
-            <h2 className="text-2xl font-bold text-gray-800">My Team (Current Hired Staffs)</h2>
-            <Link to='/EmployerStaffs' className="text-yellow-600 underline font-semibold hover:text-yellow-800">
+            <h2 className="text-2xl font-bold text-gray-800">
+              My Team (Current Hired Staffs)
+            </h2>
+            <Link
+              to="/EmployerStaffs"
+              className="text-yellow-600 underline font-semibold hover:text-yellow-800"
+            >
               View All
             </Link>
           </div>
@@ -200,14 +358,16 @@ const EmployerDb = () => {
                     <tr
                       key={index}
                       className={`border-b border-gray-200 ${
-                        index % 2 === 0 ? 'bg-yellow-50' : 'bg-white'
+                        index % 2 === 0 ? "bg-yellow-50" : "bg-white"
                       }`}
                     >
                       <td className="py-3 px-6">{applicant.firstName}</td>
                       <td className="py-3 px-6">{applicant.lastName}</td>
                       <td className="py-3 px-6">{job.schedule}</td>
                       <td className="py-3 px-6">{job.position}</td>
-                      <td className="py-3 px-6 text-green-600 font-semibold">{staff.status}</td>
+                      <td className="py-3 px-6 text-green-600 font-semibold">
+                        {staff.status}
+                      </td>
                     </tr>
                   );
                 })}
@@ -219,8 +379,13 @@ const EmployerDb = () => {
         {/* Applicants List Table */}
         <section className="mb-12 w-full">
           <div className="flex justify-between items-center mb-4">
-            <h2 className="text-2xl font-bold text-gray-800">Applicants List</h2>
-            <Link to='/EmployerAppList' className="text-yellow-600 underline font-semibold hover:text-yellow-800">
+            <h2 className="text-2xl font-bold text-gray-800">
+              Applicants List
+            </h2>
+            <Link
+              to="/EmployerAppList"
+              className="text-yellow-600 underline font-semibold hover:text-yellow-800"
+            >
               View All
             </Link>
           </div>
@@ -239,13 +404,19 @@ const EmployerDb = () => {
                   <tr
                     key={index}
                     className={`border-b border-gray-200 ${
-                      index % 2 === 0 ? 'bg-yellow-50' : 'bg-white'
+                      index % 2 === 0 ? "bg-yellow-50" : "bg-white"
                     }`}
                   >
-                    <td className="py-3 px-6">{applicant.applicantId.firstName}</td>
-                    <td className="py-3 px-6">{applicant.applicantId.lastName}</td>
+                    <td className="py-3 px-6">
+                      {applicant.applicantId.firstName}
+                    </td>
+                    <td className="py-3 px-6">
+                      {applicant.applicantId.lastName}
+                    </td>
                     <td className="py-3 px-6">{applicant.applicantId.email}</td>
-                    <td className="py-3 px-6 text-yellow-600 font-semibold">{applicant.status}</td>
+                    <td className="py-3 px-6 text-yellow-600 font-semibold">
+                      {applicant.status}
+                    </td>
                   </tr>
                 ))}
               </tbody>
@@ -257,7 +428,10 @@ const EmployerDb = () => {
         <section className="mb-12 w-full">
           <div className="flex justify-between items-center mb-4">
             <h2 className="text-2xl font-bold text-gray-800">Jobs Posted</h2>
-            <Link to='/EmployerJobPost' className="text-yellow-600 underline font-semibold hover:text-yellow-800">
+            <Link
+              to="/EmployerJobPost"
+              className="text-yellow-600 underline font-semibold hover:text-yellow-800"
+            >
               View All
             </Link>
           </div>
@@ -277,14 +451,17 @@ const EmployerDb = () => {
                   <tr
                     key={index}
                     className={`border-b border-gray-200 ${
-                      index % 2 === 0 ? 'bg-yellow-50' : 'bg-white'
+                      index % 2 === 0 ? "bg-yellow-50" : "bg-white"
                     }`}
                   >
                     <td className="py-3 px-6">{job.position}</td>
-                    {job.salaryRate}/{job.salaryRateType === 'per day' ? 'day' : 'hour'}
+                    {job.salaryRate}/
+                    {job.salaryRateType === "per day" ? "day" : "hour"}
                     <td className="py-3 px-6">{job.schedule}</td>
                     <td className="py-3 px-6">{job.quota}</td>
-                    <td className="py-3 px-6 text-yellow-700 font-semibold">{job.status}</td>
+                    <td className="py-3 px-6 text-yellow-700 font-semibold">
+                      {job.status}
+                    </td>
                   </tr>
                 ))}
               </tbody>

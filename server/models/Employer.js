@@ -55,6 +55,10 @@ const EmployerSchema = new mongoose.Schema({
         enum: ['pending', 'approved', 'rejected'], // Restrict values to these statuses
         default: 'pending' // Default status is 'pending' until approved by an admin
     },
+    rejectionReason: { // 👈 store rejection reason
+        type: String,
+        default: null 
+    },
     createdAt: {
         type: Date,
         default: Date.now

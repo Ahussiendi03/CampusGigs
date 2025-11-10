@@ -13,6 +13,10 @@ const ParentSchema = new mongoose.Schema({
     campusAddress: { type: String, required: true },
     role: { type: String, default: "parent" },
     status: { type: String, enum: ['pending', 'approved', 'rejected'], default: 'pending' }, // Admin approval
+    rejectionReason: { // 👈 store rejection reason
+        type: String,
+        default: null 
+    },
     createdAt: { type: Date, default: Date.now }
 });
 

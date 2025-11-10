@@ -135,28 +135,28 @@ const ParentSignUp = () => {
         </div>
       )}
       {showSuccessModal && (
-  <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
-    <div className="bg-white rounded-2xl shadow-xl p-6 w-full max-w-md text-center">
-      <div className="mb-4">
-        <i className="fas fa-check-circle text-green-500 text-5xl"></i>
-      </div>
-      <h2 className="text-2xl font-bold text-gray-800 mb-2">Account Registered</h2>
-      <p className="text-gray-700 mb-4">
-        Your account has been successfully registered.<br />
-        Please wait for the admin approval.
-      </p>
-      <p className="text-sm text-gray-500 mb-2">
-        Redirecting to sign in...
-      </p>
-      <button
-        onClick={() => navigate('/sign-in')}
-        className="bg-blue-500 hover:bg-blue-600 text-white px-6 py-2 rounded-full transition duration-300"
-      >
-        Close
-      </button>
-    </div>
-  </div>
-)}
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
+          <div className="bg-white rounded-2xl shadow-xl p-6 w-full max-w-md text-center">
+            <div className="mb-4">
+              <i className="fas fa-check-circle text-green-500 text-5xl"></i>
+            </div>
+            <h2 className="text-2xl font-bold text-gray-800 mb-2">Account Registered</h2>
+            <p className="text-gray-700 mb-4">
+              Your account has been successfully registered.<br />
+              Please wait for the admin approval.
+            </p>
+            <p className="text-sm text-gray-500 mb-2">
+              Redirecting to sign in...
+            </p>
+            <button
+              onClick={() => navigate('/sign-in')}
+              className="bg-blue-500 hover:bg-blue-600 text-white px-6 py-2 rounded-full transition duration-300"
+            >
+              Close
+            </button>
+          </div>
+        </div>
+      )}
 
 
       {/* Your existing JSX starts here */}
@@ -468,6 +468,8 @@ const ParentSignUp = () => {
               <option value="Dimalna 2">Dimalna 2</option>
               <option value="Barrio Salam">Barrio Salam</option>
               <option value="3rd Street">3rd Street</option>
+              <option value="Upper Comcent">Upper Comcent</option>
+              <option value="Rapasun">Rapasun</option>
               {/* Add more options as needed */}
             </select>
           </div>

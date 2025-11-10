@@ -51,6 +51,10 @@ const ApplicantSchema = new mongoose.Schema({
         type: String,
         default: 'Beginner'
     },
+    rejectionReason: { // 👈 store rejection reason
+        type: String,
+        default: null 
+    },
     createdAt: {
         type: Date,
         default: Date.now

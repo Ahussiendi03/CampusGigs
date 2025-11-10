@@ -169,7 +169,7 @@ const AdminManageJob = () => {
           {/* Header */}
           <div className="w-full flex justify-between items-center mb-3">
             <p className="text-3xl font-bold ml-1">Pending Job Posts</p>
-            <div className="flex items-center ml-auto">
+            {/* <div className="flex items-center ml-auto">
               <div className="relative mr-8">
                 <input
                   type="text"
@@ -178,7 +178,7 @@ const AdminManageJob = () => {
                 />
                 <i className="fas fa-search absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-600"></i>
               </div>
-            </div>
+            </div> */}
           </div>
 
           {/* Pending Jobs Table */}

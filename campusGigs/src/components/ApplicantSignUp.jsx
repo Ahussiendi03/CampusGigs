@@ -411,6 +411,8 @@ const ApplicantSignUp = () => {
               <option value="Dimalna 2">Dimalna 2</option>
               <option value="Barrio Salam">Barrio Salam</option>
               <option value="3rd Street">3rd Street</option>
+              <option value="Upper Comcent">Upper Comcent</option>
+              <option value="Rapasun">Rapasun</option>
               {/* Add more options as needed */}
             </select>
           </div>

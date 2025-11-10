@@ -261,14 +261,19 @@ const EmployerJobPost = () => {
         <div className="mt-6 w-full">
           <div className="w-full flex justify-between items-center mb-3">
             <p className="text-3xl font-bold ml-1">Jobs Posted</p>
-            <div className="flex items-center ml-auto">
-              <p
-                onClick={togglePostModal}
-                className="block py-2 px-4 bg-maroon-700 text-yellow-300 font-bold text-base rounded-lg text-center w-[150px] mr-4 cursor-pointer"
-              >
-                + Post a Job
-              </p>
-            </div>
+            <button
+  onClick={employerData.status === 'approved' ? togglePostModal : undefined}
+  disabled={employerData.status !== 'approved'}
+  className={`block py-2 px-4 font-bold text-base rounded-lg text-center w-[150px] mr-4
+    ${employerData.status === 'approved'
+      ? 'bg-maroon-700 text-yellow-300 cursor-pointer hover:bg-maroon-800'
+      : 'bg-gray-400 text-gray-200 cursor-not-allowed'}
+  `}
+  title={employerData.status !== 'approved' ? 'Your account must be approved before posting jobs' : ''}
+>
+  + Post a Job
+</button>
+
           </div>
 
           {/* Table of job posts */}

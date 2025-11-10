@@ -175,7 +175,7 @@ const AdminJobDismissal = () => {
                 <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 text-sm text-gray-800">
                   <p><strong>Position:</strong> {job.position}</p>
                   <p><strong>Schedule:</strong> {job.schedule}</p>
-                  <p><strong>Rate:</strong> ${job.salaryRate}</p>
+                  <p><strong>Rate:</strong> {job.salaryRate}</p>
                   <p><strong>Status:</strong> {job.status}</p>
                 </div>
 

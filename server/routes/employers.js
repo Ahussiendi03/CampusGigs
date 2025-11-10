@@ -35,6 +35,23 @@ router.get('/:employerId/positions', async (req, res) => {
   }
 });
 
+router.get('/:employerId/status', async (req, res) => {
+  try {
+    console.log("Fetching status for employerId:", req.params.employerId);
+    const employer = await Employer.findById(req.params.employerId).select('status');
+
+    if (!employer) {
+      return res.status(404).json({ message: 'Employer not found' });
+    }
+
+    console.log("Found employer with status:", employer.status);
+    res.json({ status: employer.status });
+  } catch (error) {
+    console.error('Error fetching employer status:', error);
+    res.status(500).json({ message: 'Server error' });
+  }
+});
+
 
 
 module.exports = router;

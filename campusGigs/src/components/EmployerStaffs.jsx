@@ -11,6 +11,9 @@ const EmployerStaffs = () => {
   const [feedbackComment, setFeedbackComment] = useState('');
   const [showFeedbackModal, setShowFeedbackModal] = useState(false);
   const [showApplicantMenu, setShowApplicantMenu] = useState(true);
+  const [showMessageModal, setShowMessageModal] = useState(false);
+  const [messageType, setMessageType] = useState("success"); // "success" | "error"
+  const [messageText, setMessageText] = useState("");
 
   const navigate = useNavigate();
   const location = useLocation();
@@ -58,12 +61,16 @@ const EmployerStaffs = () => {
         )
       );
 
-      alert('Feedback submitted!');
+      setMessageType("success");
+      setMessageText("✅ Feedback submitted successfully!");
+      setShowMessageModal(true);
       setShowFeedbackModal(false);
 
     } catch (error) {
-      console.error('Error submitting feedback:', error);
-      alert('Failed to submit feedback');
+      console.error("Error submitting feedback:", error);
+    setMessageType("error");
+    setMessageText("❌ Failed to submit feedback. Please try again.");
+    setShowMessageModal(true);
     }
   };
 
@@ -156,6 +163,36 @@ const EmployerStaffs = () => {
         </Link>
       </div>
     )}
+    {/* Message Modal */}
+{showMessageModal && (
+  <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50">
+    <div
+      className={`p-6 rounded-2xl shadow-lg w-96 text-center ${
+        messageType === "success" ? "bg-green-100" : "bg-red-100"
+      }`}
+    >
+      <h2
+        className={`text-xl font-bold mb-3 ${
+          messageType === "success" ? "text-green-700" : "text-red-700"
+        }`}
+      >
+        {messageType === "success" ? "Success!" : "Error"}
+      </h2>
+      <p className="text-gray-800">{messageText}</p>
+      <button
+        onClick={() => setShowMessageModal(false)}
+        className={`mt-4 px-4 py-2 rounded-lg text-white ${
+          messageType === "success"
+            ? "bg-green-600 hover:bg-green-700"
+            : "bg-red-600 hover:bg-red-700"
+        }`}
+      >
+        OK
+      </button>
+    </div>
+  </div>
+)}
+
   </div>
 
   {/* Post Job */}

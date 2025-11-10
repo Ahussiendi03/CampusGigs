@@ -160,7 +160,7 @@ router.get('/pending', async (req, res) => {
 
     console.log('Populated Jobs:', populatedJobs); // Check if population worked
     res.json(populatedJobs);
-    
+
   } catch (error) {
     res.status(500).json({ message: 'Server error: ' + error.message });
   }

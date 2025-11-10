@@ -206,12 +206,12 @@ const [showJobMenu, setShowJobMenu] = useState(false);
                     className="w-10 h-10 object-cover rounded-full border border-black p-1"
                   />
                 )}
-                <p className="text-2xl font-serif italic">
+                <p className="text-xl font-serif italic">
                   {fb.employerId?.businessName || 'Unknown Employer'}
                 </p>
               </div>
 
-              <p className="text-lg text-gray-400 mb-1">
+              <p className="text-sm text-gray-400 mb-1">
                 Given on: {new Date(fb.createdAt).toLocaleDateString()}
               </p>
 
@@ -230,7 +230,7 @@ const [showJobMenu, setShowJobMenu] = useState(false);
         </div>
 
         {/* Parent Feedbacks Section */}
-        <h2 className="text-3xl font-bold mb-6">Parent Feedbacks</h2>
+        <h2 className="text-xl font-bold mb-6">Parent Feedbacks</h2>
         <div className="space-y-4">
           {parentFeedbacks.length === 0 && <p>No parent feedbacks available.</p>}
 
@@ -242,7 +242,7 @@ const [showJobMenu, setShowJobMenu] = useState(false);
                 </p>
               </div>
 
-              <p className="text-lg text-gray-400 mb-1">
+              <p className="text-sm text-gray-400 mb-1">
                 Given on: {new Date(fb.createdAt).toLocaleDateString()}
               </p>
 

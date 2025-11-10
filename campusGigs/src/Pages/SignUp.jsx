@@ -13,10 +13,10 @@ const SignUp = () => {
           {/* Employer Section */}
           <div className="column">
             <div className="bg-white rounded-lg shadow-md p-4 mt-14">
-              <h2 className="text-xl font-bold mb-2">Employer</h2>
-              <img src={employerImage} alt="Employer" className="w-full rounded-lg mb-2 employeerPic" />
-              <Link to="/employerSignUp" className="block py-2 px-4 bg-maroon-700 text-yellow-300 font-bold rounded-lg text-center EmployeerSignIn">
-                I WANT TO HIRE AN APPLICANT
+              <h2 className="text-xl font-bold mb-2">Applicant</h2>
+              <img src={applicantImage} alt="Employer" className="w-full rounded-lg mb-2 employeerPic" />
+              <Link to="/applicantSignUp" className="block py-2 px-4 bg-maroon-700 text-yellow-300 font-bold rounded-lg text-center EmployeerSignIn">
+              I WANT A PART TIME JOB
               </Link>
             </div>
           </div>
@@ -24,10 +24,10 @@ const SignUp = () => {
           {/* Parent Section */}
           <div className="column">
             <div className="bg-white rounded-lg shadow-md p-4 mt-14">
-              <h2 className="text-xl font-bold mb-2">Parent</h2>
-              <img src={parentImage} alt="Parent" className="w-full rounded-lg mb-2 ParentPic" />
-              <Link to="/parentSignUp" className="block py-2 px-4 bg-maroon-700 text-yellow-300 font-bold rounded-lg text-center ParentSignIn">
-                I WANT TO HIRE A TUTOR
+              <h2 className="text-xl font-bold mb-2">Employer</h2>
+              <img src={employerImage} alt="Parent" className="w-full rounded-lg mb-2 ParentPic" />
+              <Link to="/employerSignUp" className="block py-2 px-4 bg-maroon-700 text-yellow-300 font-bold rounded-lg text-center ParentSignIn">
+              I WANT TO HIRE AN APPLICANT
               </Link>
             </div>
           </div>
@@ -35,10 +35,10 @@ const SignUp = () => {
           {/* Applicants Section */}
           <div className="column">
             <div className="bg-white rounded-lg shadow-md p-4 mt-14">
-              <h2 className="text-xl font-bold mb-2">Applicants</h2>
-              <img src={applicantImage} alt="Applicants" className="w-full rounded-lg mb-2 ApplicantPic" />
-              <Link to="/applicantSignUp" className="block py-2 px-4 bg-maroon-700 text-yellow-300 font-bold rounded-lg text-center ApplicantSignIn">
-                I WANT A PART TIME JOB
+              <h2 className="text-xl font-bold mb-2">Parent</h2>
+              <img src={parentImage} alt="Applicants" className="w-full rounded-lg mb-2 ApplicantPic" />
+              <Link to="/parentSignUp" className="block py-2 px-4 bg-maroon-700 text-yellow-300 font-bold rounded-lg text-center ApplicantSignIn">
+              I WANT TO HIRE A TUTOR
               </Link>
             </div>
           </div>

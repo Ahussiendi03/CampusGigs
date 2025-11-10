@@ -144,9 +144,9 @@ app.post("/sign-in", (req, res) => {
         .then(applicant => {
             if (applicant) {
                 // Check if the account is approved
-                if (applicant.status !== 'approved') {
-                    return res.json({ status: "Error", message: "Your account is not approved yet." });
-                }
+                // if (applicant.status !== 'approved') {
+                //     return res.json({ status: "Error", message: "Your account is not approved yet." });
+                // }
 
                 bcrypt.compare(password, applicant.password, (err, response) => {
                     if (response) {
@@ -166,9 +166,9 @@ app.post("/sign-in", (req, res) => {
                     .then(employer => {
                         if (employer) {
                             // Check if the account is approved
-                            if (employer.status !== 'approved') {
-                                return res.json({ status: "Error", message: "Your account is not approved yet." });
-                            }
+                            // if (employer.status !== 'approved') {
+                            //     return res.json({ status: "Error", message: "Your account is not approved yet." });
+                            // }
 
                             bcrypt.compare(password, employer.password, (err, response) => {
                                 if (response) {
@@ -188,9 +188,9 @@ app.post("/sign-in", (req, res) => {
                                 .then(parent => {
                                     if (parent) {
                                         // Check if the account is approved
-                                        if (parent.status !== 'approved') {
-                                            return res.json({ status: "Error", message: "Your account is not approved yet." });
-                                        }
+                                        // if (parent.status !== 'approved') {
+                                        //     return res.json({ status: "Error", message: "Your account is not approved yet." });
+                                        // }
 
                                         bcrypt.compare(password, parent.password, (err, response) => {
                                             if (response) {
@@ -350,8 +350,6 @@ app.post("/sign-in", (req, res) => {
 // });
 
 
-
-
 app.post('/logout', (req, res) => {
     res.clearCookie('token');
     res.json({ status: "Success", message: "Logged out successfully" });
@@ -359,12 +357,8 @@ app.post('/logout', (req, res) => {
 
 
 
-
-
-
-
-
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
+
 
 
 const uploadsDir = path.join(__dirname, 'uploads');
