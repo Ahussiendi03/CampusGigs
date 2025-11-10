@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { Link, useLocation } from "react-router-dom";
+import AdminSidebar from "./AdminSidebar";
 import axios from "axios";
 import "@fortawesome/fontawesome-free/css/all.min.css";
 
@@ -93,94 +94,7 @@ const AdminManageRegister = () => {
   return (
     <div className="flex">
       {/* Sidebar */}
-      <div className="bg-gray-200 w-[290px] h-[950px] p-4 shadow-md">
-        {/* Dashboard */}
-        <Link
-          to="/AdminDashboard"
-          className={`flex items-center mb-4 px-4 py-3 rounded-lg cursor-pointer ${
-            location.pathname === "/AdminDashboard"
-              ? "bg-gold shadow-md"
-              : "hover:bg-gray-300"
-          }`}
-        >
-          <i className="fas fa-home text-lg mr-2"></i>
-          <span className="text-lg font-bold">Dashboard</span>
-        </Link>
-
-        {/* Manage Account Registrations */}
-        <Link
-          to="/AdminManageRegister"
-          className={`flex items-center mb-4 px-4 py-3 rounded-lg cursor-pointer ${
-            location.pathname === "/AdminManageRegister"
-              ? "bg-gold shadow-md"
-              : "hover:bg-gray-300"
-          }`}
-        >
-          <i className="fas fa-user text-lg mr-2"></i>
-          <span className="text-lg font-bold">
-            Manage Account Registrations
-          </span>
-        </Link>
-
-        {/* Manage Gigs Dropdown */}
-        <div className="mb-4">
-          <div
-            className="flex items-center justify-between px-4 py-3 rounded-lg cursor-pointer hover:bg-gray-300"
-            onClick={() => setShowGigMenu(!showGigMenu)}
-          >
-            <div className="flex items-center">
-              <i className="fas fa-briefcase text-lg mr-2"></i>
-              <span className="text-lg font-bold">Manage Gigs</span>
-            </div>
-            <i
-              className={`fas fa-chevron-${
-                showGigMenu ? "up" : "down"
-              } text-gray-700 transition-transform duration-200`}
-            ></i>
-          </div>
-
-          {showGigMenu && (
-            <div className="ml-6 mt-2">
-              <Link
-                to="/AdminManageJob"
-                className={`flex items-center mb-2 px-4 py-3 rounded-lg cursor-pointer ${
-                  location.pathname === "/AdminManageJob"
-                    ? "bg-gold shadow-md"
-                    : "hover:bg-gray-300"
-                }`}
-              >
-                <i className="fas fa-briefcase text-base mr-2"></i>
-                <span className="text-base font-bold">Manage Job Posts</span>
-              </Link>
-
-              <Link
-                to="/AdminManageTutor"
-                className={`flex items-center px-4 py-3 rounded-lg cursor-pointer ${
-                  location.pathname === "/AdminManageTutor"
-                    ? "bg-gold shadow-md"
-                    : "hover:bg-gray-300"
-                }`}
-              >
-                <i className="fas fa-chalkboard-teacher text-base mr-2"></i>
-                <span className="text-base font-bold">Manage Tutor Posts</span>
-              </Link>
-            </div>
-          )}
-          <Link
-            to="/AdminJobDismissal"
-            className={`flex items-center mb-4 px-4 py-3 rounded-lg cursor-pointer ${
-              location.pathname === "/AdminJobDismissal"
-                ? "bg-gold shadow-md"
-                : "hover:bg-gray-300"
-            }`}
-          >
-            <i className="fas fa-users text-lg mr-2"></i>
-            <span className="text-lg font-bold">
-              Manage Job Posted Dismissal
-            </span>
-          </Link>
-        </div>
-      </div>
+      <AdminSidebar />
 
       {/* Main Content */}
       <div className="flex-1 p-6">
