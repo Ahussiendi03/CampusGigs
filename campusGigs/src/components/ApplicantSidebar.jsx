@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { Link, useLocation } from "react-router-dom";
 import "@fortawesome/fontawesome-free/css/all.min.css";
+import axios from "axios";
 
 const ApplicantSidebar = () => {
   const location = useLocation();
@@ -8,6 +9,22 @@ const ApplicantSidebar = () => {
   const [jobDropdownOpen, setJobDropdownOpen] = useState(false);
   const [showAccMenu, setShowAccMenu] = useState(false);
   const [showJobMenu, setShowJobMenu] = useState(false);
+  const [applicantData, setApplicantData] = useState(null);
+
+  useEffect(() => {
+    const fetchApplicantData = async () => {
+      try {
+        const response = await axios.get(
+          "http://localhost:5000/api/applicants/my",
+          { withCredentials: true }
+        );
+        setApplicantData(response.data);
+      } catch (error) {
+        console.error("Error fetching applicant data:", error);
+      }
+    };
+    fetchApplicantData();
+  }, []);
 
   useEffect(() => {
     const path = location.pathname + location.search;
@@ -15,17 +32,47 @@ const ApplicantSidebar = () => {
     if (path.includes("ApplicantsJobPostings")) setJobDropdownOpen(true);
     else setJobDropdownOpen(false);
 
-    if (path.includes("ApplicantsMyAcc") || path.includes("ApplicantsLevelingSystem"))
+    if (
+      path.includes("ApplicantsMyAcc") ||
+      path.includes("ApplicantsLevelingSystem")
+    )
       setShowAccMenu(true);
     else setShowAccMenu(false);
 
-    if (path.includes("ApplicantsJobApps") || path.includes("ApplicantsCurrentJob"))
+    if (
+      path.includes("ApplicantsJobApps") ||
+      path.includes("ApplicantsCurrentJob")
+    )
       setShowJobMenu(true);
     else setShowJobMenu(false);
   }, [location.pathname, location.search]);
 
   return (
     <div className="bg-gray-200 w-[290px] min-h-full p-4 shadow-md flex flex-col">
+      {/* Applicant Profile */}
+      <div className="flex items-center mb-6 border-b border-gray-400 pb-4">
+        <div className="w-14 h-14 rounded-full overflow-hidden bg-gray-300 mr-3 shadow-md">
+          {applicantData?.profilePicture ? (
+            <img
+              src={`http://localhost:5000/${applicantData.profilePicture}`}
+              alt="Profile"
+              className="w-full h-full object-cover"
+            />
+          ) : (
+            <div className="w-full h-full flex items-center justify-center text-gray-700 text-2xl">
+              <i className="fas fa-user"></i>
+            </div>
+          )}
+        </div>
+
+        <div>
+          <p className="font-bold text-gray-800 text-lg">
+            {applicantData?.firstName || "Applicant"}
+          </p>
+          <p className="text-gray-600 text-sm">Applicant</p>
+        </div>
+      </div>
+
       <Link
         to="/ApplicantDashboard"
         className={`flex items-center mb-4 px-4 py-3 rounded-lg cursor-pointer ${
@@ -48,14 +95,17 @@ const ApplicantSidebar = () => {
             <i className="fas fa-clipboard-list text-lg mr-2"></i>
             <span className="text-lg font-bold">Job Postings</span>
           </div>
-          <i className={`fas fa-chevron-${jobDropdownOpen ? "up" : "down"}`}></i>
+          <i
+            className={`fas fa-chevron-${jobDropdownOpen ? "up" : "down"}`}
+          ></i>
         </div>
         {jobDropdownOpen && (
           <div className="ml-6 mt-2 flex flex-col">
             <Link
               to="/ApplicantsJobPostings?view=job"
               className={`flex items-center mb-2 px-4 py-2 rounded hover:bg-yellow-300 ${
-                location.pathname + location.search === "/ApplicantsJobPostings?view=job"
+                location.pathname + location.search ===
+                "/ApplicantsJobPostings?view=job"
                   ? "bg-yellow-400 font-bold text-black"
                   : ""
               }`}
@@ -66,7 +116,8 @@ const ApplicantSidebar = () => {
             <Link
               to="/ApplicantsJobPostings?view=tutor"
               className={`flex items-center mb-2 px-4 py-2 rounded hover:bg-yellow-300 ${
-                location.pathname + location.search === "/ApplicantsJobPostings?view=tutor"
+                location.pathname + location.search ===
+                "/ApplicantsJobPostings?view=tutor"
                   ? "bg-yellow-400 font-bold text-black"
                   : ""
               }`}
@@ -95,7 +146,9 @@ const ApplicantSidebar = () => {
             <Link
               to="/ApplicantsMyAcc"
               className={`flex items-center mb-2 px-4 py-2 rounded hover:bg-gray-300 ${
-                location.pathname === "/ApplicantsMyAcc" ? "bg-gold font-bold text-black" : ""
+                location.pathname === "/ApplicantsMyAcc"
+                  ? "bg-gold font-bold text-black"
+                  : ""
               }`}
             >
               <i className="fas fa-id-badge text-base mr-2"></i>
@@ -133,7 +186,9 @@ const ApplicantSidebar = () => {
             <Link
               to="/ApplicantsJobApps"
               className={`flex items-center mb-2 px-4 py-2 rounded hover:bg-gray-300 ${
-                location.pathname === "/ApplicantsJobApps" ? "bg-gold font-bold text-black" : ""
+                location.pathname === "/ApplicantsJobApps"
+                  ? "bg-gold font-bold text-black"
+                  : ""
               }`}
             >
               <i className="fas fa-tasks text-base mr-2"></i>
@@ -142,7 +197,9 @@ const ApplicantSidebar = () => {
             <Link
               to="/ApplicantsCurrentJob"
               className={`flex items-center px-4 py-2 rounded hover:bg-gray-300 ${
-                location.pathname === "/ApplicantsCurrentJob" ? "bg-gold font-bold text-black" : ""
+                location.pathname === "/ApplicantsCurrentJob"
+                  ? "bg-gold font-bold text-black"
+                  : ""
               }`}
             >
               <i className="fas fa-briefcase text-base mr-2"></i>
@@ -156,7 +213,9 @@ const ApplicantSidebar = () => {
       <Link
         to="/ApplicantsFeedback"
         className={`flex items-center mb-4 px-4 py-3 rounded-lg cursor-pointer ${
-          location.pathname === "/ApplicantsFeedback" ? "bg-gold shadow-md" : "hover:bg-gray-300"
+          location.pathname === "/ApplicantsFeedback"
+            ? "bg-gold shadow-md"
+            : "hover:bg-gray-300"
         }`}
       >
         <i className="fas fa-comments text-lg mr-2"></i>
