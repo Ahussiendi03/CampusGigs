@@ -1,10 +1,27 @@
 import React, { useState, useEffect } from "react";
 import { Link, useLocation } from "react-router-dom";
 import "@fortawesome/fontawesome-free/css/all.min.css";
+import axios from "axios";
 
 const EmployerSidebar = () => {
   const location = useLocation();
   const [showApplicantMenu, setShowApplicantMenu] = useState(false);
+  const [employerData, setEmployerData] = useState(null);
+
+  useEffect(() => {
+    const employerProfile = async () => {
+      try {
+        const response = await axios.get(
+          "http://localhost:5000/api/employer/me",
+          { withCredentials: true }
+        );
+        setEmployerData(response.data);
+      } catch (error) {
+        console.error("Error fetching employer data:", error);
+      }
+    };
+    employerProfile();
+  });
 
   useEffect(() => {
     if (
@@ -18,12 +35,27 @@ const EmployerSidebar = () => {
   return (
     <div className="bg-gray-200 w-[290px] min-h-full p-4 shadow-md flex flex-col">
       {/* 🧑 Employer Profile (Top Section) */}
+      {/* 🧑 Employer Profile (Top Section) */}
       <div className="flex items-center mb-6 border-b border-gray-400 pb-4">
-        <div className="bg-yellow-500 w-14 h-14 rounded-full flex items-center justify-center text-white text-3xl mr-3 shadow-md">
-          <i className="fas fa-user-tie"></i>
-        </div>
+        {/* Profile Picture */}
+        {employerData?.profilePicture ? (
+          <img
+            src={`http://localhost:5000/${employerData.profilePicture}`}
+            alt="Employer"
+            className="w-14 h-14 rounded-full object-cover mr-3 shadow-md"
+          />
+        ) : (
+          <div className="bg-yellow-500 w-14 h-14 rounded-full flex items-center justify-center text-white text-3xl mr-3 shadow-md">
+            <i className="fas fa-user-tie"></i>
+          </div>
+        )}
+
+        {/* Name */}
         <div>
-          <p className="font-bold text-gray-800 text-lg">Employer</p>
+          <p className="font-bold text-gray-800 text-lg">
+            {employerData?.businessName || "Employer"}
+          </p>
+          <p className="text-gray-600 text-sm">Employer</p>
         </div>
       </div>
 

@@ -72,36 +72,6 @@ const EmployerDb = () => {
       {/* Main Content */}
       <div className="flex-1 flex flex-col items-center justify-start mb-48 p-8 max-w-[1100px]">
         <div className="flex justify-between items-center w-full mb-6">
-          <div className="flex items-center space-x-4">
-            {employerData?.profilePicture && (
-              <img
-                src={`http://localhost:5000/${employerData.profilePicture}`}
-                alt="Profile"
-                className="w-20 h-20 object-cover border rounded-full"
-              />
-            )}
-            <p className="text-3xl font-extrabold text-gray-800">
-              {employerData?.firstName}{" "}
-              {employerData?.role && `(${employerData.role})`}
-            </p>
-
-            {/* Notification Bell */}
-            <div className="relative">
-              <button
-                onClick={handleOpenModal}
-                className="p-2 rounded-full hover:bg-gray-100 transition"
-              >
-                <Bell className="w-9 h-9 text-gray-700" />
-              </button>
-
-              {/* Badge Logic */}
-              {employerData?.status !== "approved" && (
-                <span className="absolute top-1 right-1 flex items-center justify-center w-5 h-5 bg-red-500 text-white text-xs font-bold rounded-full">
-                  1
-                </span>
-              )}
-            </div>
-          </div>
 
           {/* Modal */}
           {isModalOpen && (
