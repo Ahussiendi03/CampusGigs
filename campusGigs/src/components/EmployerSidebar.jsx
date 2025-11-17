@@ -8,16 +8,15 @@ const EmployerSidebar = () => {
 
   useEffect(() => {
     if (
-      location.pathname === '/EmployerStaffs' ||
-      location.pathname === '/EmployerAppList'
+      location.pathname === "/EmployerStaffs" ||
+      location.pathname === "/EmployerAppList"
     ) {
-        setShowApplicantMenu(true);
+      setShowApplicantMenu(true);
     }
   }, [location.pathname]);
 
   return (
-    <div className="bg-gray-200 w-[290px] h-[950px] p-4 shadow-md flex flex-col">
-      
+    <div className="bg-gray-200 w-[290px] min-h-full p-4 shadow-md flex flex-col">
       {/* 🧑 Employer Profile (Top Section) */}
       <div className="flex items-center mb-6 border-b border-gray-400 pb-4">
         <div className="bg-yellow-500 w-14 h-14 rounded-full flex items-center justify-center text-white text-3xl mr-3 shadow-md">

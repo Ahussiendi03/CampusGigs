@@ -16,7 +16,7 @@ const jobPostRoutes = require('./routes/jobPosts');
 const employerRoutes = require('./routes/jobPosts');
 const applicationsRoutes = require('./routes/applications');
 const applicantRoutes = require('./routes/applicantRoutes');
-const registrationRoutes = require('./routes/registration');    
+const registrationRoutes = require('./routes/registration');
 const feedbackRoute = require('./routes/feedback');
 const applicantsLevel = require('./routes/applicants');
 const tutorPostRoutes = require('./routes/tutorPosts');
@@ -74,9 +74,9 @@ const authenticate = (req, res, next) => {
 
 
 const generateToken = (user, role) => {
-    const payload = { 
-        email: user.email, 
-        role: user.role 
+    const payload = {
+        email: user.email,
+        role: user.role
     };
 
     // Add specific IDs based on the role
@@ -433,13 +433,13 @@ app.post('/employerRegister', upload.fields([
 //     { name: 'businessImage', maxCount: 1}
 //   ]), (req, res) => {
 //     const { firstName, lastName, email, password, contactNumber, streetAddress, businessName } = req.body;
-  
+
 //     // Ensure files are present before accessing
 //     const profilePicture = req.files['profilePicture'] ? req.files['profilePicture'][0].path : null;
 //     const businessPermit = req.files['businessPermit'] ? req.files['businessPermit'][0].path : null;
 //     const id = req.files['id'] ? req.files['id'][0].path : null;
 //     const businessImage = req.files['businessImage'] ? req.files['businessImage'][0].path : null;
-  
+
 //     bcrypt.hash(password, 10)
 //       .then(hash => {
 //         EmployerModel.create({
@@ -466,7 +466,7 @@ app.post('/employerRegister', upload.fields([
 //         res.status(500).json({ message: 'Error hashing password', error: err });
 //       });
 //   });
-  
+
 app.post('/applicantRegister', upload.fields([
     { name: 'profilePicture', maxCount: 1 },
     { name: 'cor', maxCount: 1 },
@@ -614,5 +614,5 @@ app.post('/parentRegister', upload.fields([
 
 app.listen(5000, () => {
     console.log("server is running");
-    
+
 });

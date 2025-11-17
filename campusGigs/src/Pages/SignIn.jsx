@@ -18,6 +18,7 @@ const SignIn = () => {
       const result = await axios.post('http://localhost:5000/sign-in', { email, password });
       if (result.data.status === "Success") {
         const { role, employerId, applicantId, parentId } = result.data;
+        
 
         if (role === "employer" && employerId) {
           localStorage.setItem('employerId', employerId);
