@@ -10,6 +10,9 @@ const EmployerAppList = () => {
   const [selectedApplicant, setSelectedApplicant] = useState(null);
   const employerId = localStorage.getItem("employerId");
   const [showApplicantMenu, setShowApplicantMenu] = useState(true);
+  const [confirmAction, setConfirmAction] = useState(null);
+  const [confirmAppId, setConfirmAppId] = useState(null);
+
   const token = Cookies.get("token") || localStorage.getItem("token");
 
   useEffect(() => {
@@ -179,13 +182,20 @@ const EmployerAppList = () => {
                     <td className="border px-4 py-2 text-center">
                       <button
                         className="text-green-500 font-semibold mr-2"
-                        onClick={() => handleApprove(applicant._id)}
+                        onClick={() => {
+                          setConfirmAction("approve");
+                          setConfirmAppId(applicant._id);
+                        }}
                       >
                         Approve
                       </button>
+
                       <button
                         className="text-red-500 font-semibold"
-                        onClick={() => handleReject(applicant._id)}
+                        onClick={() => {
+                          setConfirmAction("reject");
+                          setConfirmAppId(applicant._id);
+                        }}
                       >
                         Reject
                       </button>
@@ -196,6 +206,53 @@ const EmployerAppList = () => {
           </table>
         </div>
       </div>
+
+      {confirmAction && (
+        <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
+          <div className="bg-white p-6 rounded-lg shadow-lg w-[350px]">
+            <h3 className="text-xl font-bold mb-4 text-center text-gray-800">
+              {confirmAction === "approve"
+                ? "Approve Applicant?"
+                : "Reject Applicant?"}
+            </h3>
+
+            <p className="text-center text-gray-600 mb-6">
+              Are you sure you want to {confirmAction} this application?
+            </p>
+
+            <div className="flex justify-center gap-4">
+              <button
+                onClick={() => {
+                  if (confirmAction === "approve") {
+                    handleApprove(confirmAppId);
+                  } else {
+                    handleReject(confirmAppId);
+                  }
+                  setConfirmAction(null);
+                  setConfirmAppId(null);
+                }}
+                className={`px-6 py-2 rounded text-white font-semibold shadow-md ${
+                  confirmAction === "approve"
+                    ? "bg-green-500 hover:bg-green-600"
+                    : "bg-red-500 hover:bg-red-600"
+                }`}
+              >
+                Yes
+              </button>
+
+              <button
+                onClick={() => {
+                  setConfirmAction(null);
+                  setConfirmAppId(null);
+                }}
+                className="bg-gray-300 hover:bg-gray-400 text-gray-800 px-6 py-2 rounded"
+              >
+                No
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Profile Modal */}
       {selectedApplicant && (
