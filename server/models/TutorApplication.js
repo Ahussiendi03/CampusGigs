@@ -17,6 +17,10 @@ const tutorApplicationSchema = new mongoose.Schema({
     ref: 'parent',
     required: true
   },
+  applicationLetter: {
+    type: String,
+    required: true
+  },  
   status: {
     type: String,
     enum: ['pending', 'approved', 'rejected', 'completed', 'cancelled'],

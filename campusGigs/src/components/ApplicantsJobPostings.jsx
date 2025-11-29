@@ -17,6 +17,7 @@ const ApplicantsJobPostings = () => {
   const [jobDropdownOpen, setJobDropdownOpen] = useState(true);
   const [showAccMenu, setShowAccMenu] = useState(false);
   const [showJobMenu, setShowJobMenu] = useState(false);
+  const [applicationLetter, setApplicationLetter] = useState(null);
   const [errorModal, setErrorModal] = useState({ show: false, message: "" });
   const [applicationStatus, setApplicationStatus] = useState({
     show: false,
@@ -57,39 +58,44 @@ const ApplicantsJobPostings = () => {
     fetchApprovedJobPosts();
     fetchApprovedTutorPosts();
   }, []);
-
   const handleApply = async () => {
-    if (!applicantId || !selectedPost) {
-      setErrorModal({ show: true, message: "Missing applicant or post" });
+    if (!applicantId || !selectedPost || !applicationLetter) {
+      setErrorModal({ show: true, message: "Missing applicant, post, or application letter" });
       return;
     }
-
+  
     try {
+      const formData = new FormData();
+  
       if (postType === "job") {
-        await axios.post("http://localhost:5000/api/applications/apply", {
-          jobId: selectedPost._id,
-          applicantId,
-          employerId: selectedPost.employerId._id,
-        });
-
-        setApplicationStatus({
-          show: true,
-          success: true,
-          message: "Job application submitted successfully.",
-        });
+        formData.append("jobId", selectedPost._id);
+        formData.append("applicantId", applicantId);
+        formData.append("employerId", selectedPost.employerId._id);
       } else {
-        await axios.post("http://localhost:5000/api/tutorApplication/apply", {
-          tutorPostId: selectedPost._id,
-          applicantId,
-          parentId: selectedPost.parentId,
-        });
-
-        setApplicationStatus({
-          show: true,
-          success: true,
-          message: "Tutor application submitted successfully.",
-        });
+        formData.append("tutorPostId", selectedPost._id);
+        formData.append("applicantId", applicantId);
+        formData.append("parentId", selectedPost.parentId);
       }
+  
+      formData.append("applicationLetter", applicationLetter); // upload file
+  
+      const url =
+        postType === "job"
+          ? "http://localhost:5000/api/applications/apply"
+          : "http://localhost:5000/api/tutorApplication/apply";
+  
+      await axios.post(url, formData, {
+        headers: { "Content-Type": "multipart/form-data" },
+      });
+  
+      setApplicationStatus({
+        show: true,
+        success: true,
+        message:
+          postType === "job"
+            ? "Job application submitted successfully."
+            : "Tutor application submitted successfully.",
+      });
     } catch (err) {
       const message =
         err.response?.data?.error || "You have already applied for this post.";
@@ -99,9 +105,55 @@ const ApplicantsJobPostings = () => {
         message,
       });
     }
-
+  
     setShowConfirmModal(false);
   };
+  
+
+  // const handleApply = async () => {
+  //   if (!applicantId || !selectedPost) {
+  //     setErrorModal({ show: true, message: "Missing applicant or post" });
+  //     return;
+  //   }
+
+  //   try {
+  //     if (postType === "job") {
+  //       await axios.post("http://localhost:5000/api/applications/apply", {
+  //         jobId: selectedPost._id,
+  //         applicantId,
+  //         employerId: selectedPost.employerId._id,
+  //       });
+
+  //       setApplicationStatus({
+  //         show: true,
+  //         success: true,
+  //         message: "Job application submitted successfully.",
+  //       });
+  //     } else {
+  //       await axios.post("http://localhost:5000/api/tutorApplication/apply", {
+  //         tutorPostId: selectedPost._id,
+  //         applicantId,
+  //         parentId: selectedPost.parentId,
+  //       });
+
+  //       setApplicationStatus({
+  //         show: true,
+  //         success: true,
+  //         message: "Tutor application submitted successfully.",
+  //       });
+  //     }
+  //   } catch (err) {
+  //     const message =
+  //       err.response?.data?.error || "You have already applied for this post.";
+  //     setApplicationStatus({
+  //       show: true,
+  //       success: false,
+  //       message,
+  //     });
+  //   }
+
+  //   setShowConfirmModal(false);
+  // };
 
   const closeErrorModal = () => setErrorModal({ show: false, message: "" });
 
@@ -116,7 +168,6 @@ const ApplicantsJobPostings = () => {
     setSelectedPost(null);
     setPostType("job");
   };
-
 
   return (
     <div className="flex justify-center">
@@ -207,21 +258,36 @@ const ApplicantsJobPostings = () => {
         <div className="fixed inset-0 bg-gray-500 bg-opacity-50 flex justify-center items-center z-50">
           <div className="bg-white p-6 rounded-lg shadow-lg text-center w-1/3">
             <h3 className="text-xl font-bold mb-4">
-              Are you sure you want to apply for this{" "}
-              {postType === "job" ? "job" : "tutor"} post?
+              Upload your application letter to apply for this{" "}
+              {postType === "job" ? "job" : "tutor"} post.
             </h3>
-            <div className="flex justify-center gap-4">
+
+            {/* Upload field */}
+            <div className="mb-4 text-left">
+              <label className="font-semibold text-gray-700 block mb-1">
+                Application Letter (PDF or Doc)
+              </label>
+              <input
+                type="file"
+                accept=".pdf,.doc,.docx"
+                onChange={(e) => setApplicationLetter(e.target.files[0])}
+                className="border border-gray-300 rounded px-3 py-2 w-full"
+              />
+            </div>
+
+            <div className="flex justify-center gap-4 mt-6">
               <button
                 onClick={handleApply}
                 className="bg-green-600 text-white py-2 px-4 rounded-full hover:bg-green-500 transition"
               >
-                Yes
+                Submit
               </button>
+
               <button
                 onClick={closeConfirmModal}
                 className="bg-red-600 text-white py-2 px-4 rounded-full hover:bg-red-500 transition"
               >
-                No
+                Cancel
               </button>
             </div>
           </div>

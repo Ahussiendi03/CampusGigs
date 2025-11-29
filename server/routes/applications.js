@@ -10,58 +10,122 @@ const Feedback = require('../models/Feedback');
 const ApplicantFeedback = require('../models/ApplicantFeedback');
 const TutorApplication = require('../models/TutorApplication');
 const authMiddleware = require('../middleware/authMiddleware');
+const upload = require('../middleware/upload');
 
 
+router.post('/apply', upload.single('applicationLetter'), async (req, res) => {
+  console.log('=== Incoming Application Request ===');
+  console.log('req.body:', req.body);
+  console.log('req.file:', req.file);
 
-router.post('/apply', async (req, res) => {
   const { jobId, applicantId, employerId } = req.body;
+  const letterFile = req.file ? req.file.path : null;
+
+  // Basic validation
+  if (!jobId || !applicantId || !employerId || !letterFile) {
+    console.log('Validation failed: missing required fields or file');
+    return res.status(400).json({
+      error: 'All fields and application letter are required.',
+      receivedBody: req.body,
+      receivedFile: req.file,
+    });
+  }
 
   try {
-    // Validate input
-    if (!jobId || !applicantId || !employerId) {
-      return res.status(400).json({ error: 'All fields are required.' });
-    }
-    
-    // Check if the applicant already has an approved job
+    // Check if applicant already has an approved job
     const approvedApplication = await Application.findOne({
       applicantId,
       status: 'approved',
     });
-
     if (approvedApplication) {
+      console.log('Applicant already has an approved job:', approvedApplication);
       return res.status(400).json({
         error: 'You already have a current job. You cannot apply for another.',
+        existingApplication: approvedApplication,
       });
     }
 
-    // Check if the applicant has already applied for this job
-    const existingApplication = await Application.findOne({ jobId, applicantId });
-    if (existingApplication) {
-      return res
-        .status(400)
-        .json({ error: 'You have already applied for this job.' });
+    // Check if applicant already applied to this job
+    const exists = await Application.findOne({ jobId, applicantId });
+    if (exists) {
+      console.log('Applicant already applied for this job:', exists);
+      return res.status(400).json({
+        error: 'You have already applied for this job.',
+        existingApplication: exists,
+      });
     }
 
-    // Create a new application
+    // Create new application
     const newApplication = new Application({
       jobId,
       applicantId,
       employerId,
-      status: 'pending', // Initial status for the application
+      applicationLetter: letterFile,
+      status: 'pending',
     });
 
-    // Save the application
     await newApplication.save();
+    console.log('Application saved successfully:', newApplication);
 
-    return res.status(201).json({
+    res.status(201).json({
       message: 'Application submitted successfully.',
       application: newApplication,
     });
   } catch (error) {
-    console.error('Error applying for job:', error);
-    return res.status(500).json({ error: 'An error occurred while applying for the job.' });
+    console.error('Server error while applying:', error);
+    res.status(500).json({ error: 'Server error while applying.' });
   }
 });
+
+// router.post('/apply', async (req, res) => {
+//   const { jobId, applicantId, employerId } = req.body;
+
+//   try {
+//     // Validate input
+//     if (!jobId || !applicantId || !employerId) {
+//       return res.status(400).json({ error: 'All fields are required.' });
+//     }
+    
+//     // Check if the applicant already has an approved job
+//     const approvedApplication = await Application.findOne({
+//       applicantId,
+//       status: 'approved',
+//     });
+
+//     if (approvedApplication) {
+//       return res.status(400).json({
+//         error: 'You already have a current job. You cannot apply for another.',
+//       });
+//     }
+
+//     // Check if the applicant has already applied for this job
+//     const existingApplication = await Application.findOne({ jobId, applicantId });
+//     if (existingApplication) {
+//       return res
+//         .status(400)
+//         .json({ error: 'You have already applied for this job.' });
+//     }
+
+//     // Create a new application
+//     const newApplication = new Application({
+//       jobId,
+//       applicantId,
+//       employerId,
+//       status: 'pending', // Initial status for the application
+//     });
+
+//     // Save the application
+//     await newApplication.save();
+
+//     return res.status(201).json({
+//       message: 'Application submitted successfully.',
+//       application: newApplication,
+//     });
+//   } catch (error) {
+//     console.error('Error applying for job:', error);
+//     return res.status(500).json({ error: 'An error occurred while applying for the job.' });
+//   }
+// });
 
 // routes/applications.js
 // In your applications route handler

@@ -1,23 +1,37 @@
 const multer = require('multer');
 const path = require('path');
+const fs = require('fs');
 
-// Define storage
+// Ensure uploads folder exists
+const uploadDir = path.join(__dirname, '../uploads');
+if (!fs.existsSync(uploadDir)) {
+  fs.mkdirSync(uploadDir, { recursive: true });
+}
+
+// Storage
 const storage = multer.diskStorage({
   destination: function (req, file, cb) {
-    cb(null, 'uploads/'); // Make sure 'uploads' folder exists
+    cb(null, uploadDir); // reuse existing folder
   },
   filename: function (req, file, cb) {
     cb(null, Date.now() + '-' + file.originalname);
   },
 });
 
-// File filter (optional)
+// File filter: images + application letters
 const fileFilter = (req, file, cb) => {
-  const allowedTypes = ['image/jpeg', 'image/png', 'image/jpg'];
+  const allowedTypes = [
+    'image/jpeg',
+    'image/png',
+    'image/jpg',
+    'application/pdf',
+    'application/msword',
+    'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+  ];
   if (allowedTypes.includes(file.mimetype)) {
     cb(null, true);
   } else {
-    cb(new Error('Only images are allowed'));
+    cb(new Error('Only images or PDF/Word documents are allowed'));
   }
 };
 

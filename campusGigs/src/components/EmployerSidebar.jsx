@@ -33,7 +33,7 @@ const EmployerSidebar = () => {
   }, [location.pathname]);
 
   return (
-    <div className="bg-gray-200 w-[290px] min-h-full p-4 shadow-md flex flex-col">
+    <div className="bg-gray-200 w-[290px] h-screen p-4 shadow-md flex flex-col">
       {/* 🧑 Employer Profile (Top Section) */}
       {/* 🧑 Employer Profile (Top Section) */}
       <div className="flex items-center mb-6 border-b border-gray-400 pb-4">

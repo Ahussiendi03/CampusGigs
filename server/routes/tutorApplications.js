@@ -8,29 +8,30 @@ const Applicant = require('../models/Applicant');
 const Feedback = require('../models/Feedback');
 const jwt = require('jsonwebtoken');
 const ParentFeedbackModel = require('../models/ParentFeedbackModel');
+const upload = require('../middleware/upload');
 
 
-
-// Apply for a tutor post
-router.post('/apply', async (req, res) => {
+router.post('/apply', upload.single('applicationLetter'), async (req, res) => {
   const { tutorPostId, applicantId, parentId } = req.body;
 
   if (!tutorPostId || !applicantId || !parentId) {
     return res.status(400).json({ error: 'All fields are required.' });
   }
 
-  const approvedApplication = await TutorApplication.findOne({
-    applicantId,
-    status: 'approved',
-  });
+  const letterFile = req.file ? req.file.path : null;
 
-  if (approvedApplication) {
-    return res.status(400).json({
-      error: 'You already have a current job. You cannot apply for another.',
-    });
-  }
   try {
-    // Prevent duplicate applications
+    const approved = await TutorApplication.findOne({
+      applicantId,
+      status: 'approved',
+    });
+
+    if (approved) {
+      return res.status(400).json({
+        error: 'You already have a current job. You cannot apply for another.',
+      });
+    }
+
     const existing = await TutorApplication.findOne({ tutorPostId, applicantId });
     if (existing) {
       return res.status(400).json({ error: 'Already applied to this tutor post.' });
@@ -40,6 +41,7 @@ router.post('/apply', async (req, res) => {
       tutorPostId,
       applicantId,
       parentId,
+      applicationLetter: letterFile, // ⭐ SAVE FILE
       status: 'pending',
     });
 
@@ -51,6 +53,48 @@ router.post('/apply', async (req, res) => {
     res.status(500).json({ error: 'Server error while applying.' });
   }
 });
+
+
+// Apply for a tutor post
+// router.post('/apply', async (req, res) => {
+//   const { tutorPostId, applicantId, parentId } = req.body;
+
+//   if (!tutorPostId || !applicantId || !parentId) {
+//     return res.status(400).json({ error: 'All fields are required.' });
+//   }
+
+//   const approvedApplication = await TutorApplication.findOne({
+//     applicantId,
+//     status: 'approved',
+//   });
+
+//   if (approvedApplication) {
+//     return res.status(400).json({
+//       error: 'You already have a current job. You cannot apply for another.',
+//     });
+//   }
+//   try {
+//     // Prevent duplicate applications
+//     const existing = await TutorApplication.findOne({ tutorPostId, applicantId });
+//     if (existing) {
+//       return res.status(400).json({ error: 'Already applied to this tutor post.' });
+//     }
+
+//     const newApplication = new TutorApplication({
+//       tutorPostId,
+//       applicantId,
+//       parentId,
+//       status: 'pending',
+//     });
+
+//     await newApplication.save();
+
+//     res.status(201).json({ message: 'Application submitted.', application: newApplication });
+//   } catch (error) {
+//     console.error('Error applying to tutor post:', error);
+//     res.status(500).json({ error: 'Server error while applying.' });
+//   }
+// });
 
 // Get all tutor applications for logged-in applicant
 router.get('/my-tutor-applications', async (req, res) => {
