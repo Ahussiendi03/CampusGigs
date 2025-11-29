@@ -8,8 +8,8 @@ import axios from "axios";
 const EmployerAppList = () => {
   const [pendingApplicants, setPendingApplicants] = useState([]);
   const [selectedApplicant, setSelectedApplicant] = useState(null);
+  const [fullImage, setFullImage] = useState(null); // For full screen image view
   const employerId = localStorage.getItem("employerId");
-  const [showApplicantMenu, setShowApplicantMenu] = useState(true);
   const [confirmAction, setConfirmAction] = useState(null);
   const [confirmAppId, setConfirmAppId] = useState(null);
 
@@ -35,14 +35,14 @@ const EmployerAppList = () => {
     fetchPendingApplicants();
   }, [employerId, token]);
 
-  const handleViewProfile = async (applicantId) => {
+  const handleViewProfile = async (applicantId, jobId) => {
+    if (!applicantId || !jobId) return;
+
     try {
       const response = await axios.get(
-        `http://localhost:5000/api/applicant-profile/${applicantId}`,
+        `http://localhost:5000/api/applicant-profile/${applicantId}/${jobId}`,
         {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
+          headers: { Authorization: `Bearer ${token}` },
         }
       );
       setSelectedApplicant(response.data);
@@ -67,11 +67,9 @@ const EmployerAppList = () => {
         {},
         config
       );
-      console.log("Application approved:", response.data);
       setPendingApplicants((prev) =>
         prev.filter((app) => app._id !== applicationId)
       );
-      // Optionally update UI
     } catch (error) {
       console.error(
         "Error approving application:",
@@ -93,7 +91,6 @@ const EmployerAppList = () => {
           },
         }
       );
-      console.log("Application rejected:", response.data);
       setPendingApplicants((prev) =>
         prev.filter((app) => app._id !== applicationId)
       );
@@ -109,12 +106,16 @@ const EmployerAppList = () => {
     setSelectedApplicant(null);
   };
 
+  const handleOpenFullImage = (url) => {
+    setFullImage(url);
+  };
+
+  const handleCloseFullImage = () => setFullImage(null);
+
   return (
     <div className="flex justify-center">
-      {/* Sidebar */}
       <EmployerSidebar />
 
-      {/* Main Content */}
       <div className="flex-1 flex flex-col items-center mb-48 p-4">
         <div className="mt-10 w-full">
           <div className="w-full flex justify-between items-center mb-3">
@@ -173,7 +174,10 @@ const EmployerAppList = () => {
                       <button
                         className="text-blue-500 font-semibold"
                         onClick={() =>
-                          handleViewProfile(applicant.applicantId?._id)
+                          handleViewProfile(
+                            applicant.applicantId?._id,
+                            applicant.jobId?._id
+                          )
                         }
                       >
                         View Profile
@@ -189,7 +193,6 @@ const EmployerAppList = () => {
                       >
                         Approve
                       </button>
-
                       <button
                         className="text-red-500 font-semibold"
                         onClick={() => {
@@ -207,6 +210,7 @@ const EmployerAppList = () => {
         </div>
       </div>
 
+      {/* Confirm Action Modal */}
       {confirmAction && (
         <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
           <div className="bg-white p-6 rounded-lg shadow-lg w-[350px]">
@@ -215,11 +219,9 @@ const EmployerAppList = () => {
                 ? "Approve Applicant?"
                 : "Reject Applicant?"}
             </h3>
-
             <p className="text-center text-gray-600 mb-6">
               Are you sure you want to {confirmAction} this application?
             </p>
-
             <div className="flex justify-center gap-4">
               <button
                 onClick={() => {
@@ -239,7 +241,6 @@ const EmployerAppList = () => {
               >
                 Yes
               </button>
-
               <button
                 onClick={() => {
                   setConfirmAction(null);
@@ -254,74 +255,101 @@ const EmployerAppList = () => {
         </div>
       )}
 
-      {/* Profile Modal */}
+      {/* Applicant Profile Modal */}
       {selectedApplicant && (
-        <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
-          <div className="bg-white p-8 rounded-lg shadow-lg w-[700px] h-[500px] relative flex">
-            <div className="w-1/2 flex flex-col items-center pr-4 border-r border-gray-200">
+        <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50 overflow-auto">
+          <div className="bg-white p-8 rounded-lg shadow-lg w-[700px] relative flex flex-col md:flex-row">
+            {/* Left Panel */}
+            <div className="w-full md:w-1/2 flex flex-col items-center pr-4 border-b md:border-b-0 md:border-r border-gray-200">
               <h2 className="text-2xl font-bold mb-4 text-gray-800">
                 Applicant Profile
               </h2>
-              {selectedApplicant.profilePicture ? (
-                <img
-                  src={`http://localhost:5000/${selectedApplicant.profilePicture}`}
-                  alt="Profile"
-                  className="w-32 h-32 rounded-full border-2 border-yellow-400 shadow-md mb-4"
-                />
-              ) : (
-                <div className="w-32 h-32 flex items-center justify-center rounded-full bg-gray-200 text-gray-400 text-xl mb-4">
-                  No Image
-                </div>
-              )}
+              <img
+                src={
+                  selectedApplicant.profilePicture
+                    ? `http://localhost:5000/${selectedApplicant.profilePicture}`
+                    : ""
+                }
+                alt="Profile"
+                onClick={() =>
+                  selectedApplicant.profilePicture &&
+                  handleOpenFullImage(
+                    `http://localhost:5000/${selectedApplicant.profilePicture}`
+                  )
+                }
+                className={`w-32 h-32 rounded-full border-2 border-yellow-400 shadow-md mb-4 cursor-pointer ${
+                  selectedApplicant.profilePicture ? "hover:scale-105" : ""
+                }`}
+              />
               <div className="text-left space-y-2 w-full px-6">
-                <p className="text-gray-700">
+                <p>
                   <strong>First Name:</strong>{" "}
-                  <span className="font-medium">
-                    {selectedApplicant.firstName || "N/A"}
-                  </span>
+                  {selectedApplicant.firstName || "N/A"}
                 </p>
-                <p className="text-gray-700">
+                <p>
                   <strong>Last Name:</strong>{" "}
-                  <span className="font-medium">
-                    {selectedApplicant.lastName || "N/A"}
-                  </span>
+                  {selectedApplicant.lastName || "N/A"}
                 </p>
-                <p className="text-gray-700">
-                  <strong>Email:</strong>{" "}
-                  <span className="font-medium">
-                    {selectedApplicant.email || "N/A"}
-                  </span>
+                <p>
+                  <strong>Email:</strong> {selectedApplicant.email || "N/A"}
                 </p>
-                <p className="text-gray-700">
+                <p>
                   <strong>Street Address:</strong>{" "}
-                  <span className="font-medium">
-                    {selectedApplicant.streetAddress || "N/A"}
-                  </span>
+                  {selectedApplicant.streetAddress || "N/A"}
                 </p>
+
+                {/* Application Letters */}
+                {selectedApplicant.applicationLetter && (
+                  <div className="mt-4 text-center">
+                    <a
+                      href={`http://localhost:5000/uploads/${selectedApplicant.applicationLetter}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-yellow-500 font-semibold underline"
+                    >
+                      View Application Letter
+                    </a>
+                  </div>
+                )}
               </div>
             </div>
-            <div className="w-1/2 pl-4 flex flex-col items-center justify-between space-y-6">
+
+            {/* Right Panel */}
+            <div className="w-full md:w-1/2 pl-4 flex flex-col items-center justify-between space-y-6 mt-4 md:mt-0">
+              {/* COR */}
               <div className="text-gray-700 text-center">
                 <p className="font-bold mb-1">
-                  Certificate of Registration (COR):
+                  Certificate of Registration (COR)
                 </p>
                 {selectedApplicant.cor ? (
                   <img
                     src={`http://localhost:5000/${selectedApplicant.cor}`}
                     alt="COR"
-                    className="w-48 h-36 object-cover rounded-lg shadow-md border"
+                    onClick={() =>
+                      handleOpenFullImage(
+                        `http://localhost:5000/${selectedApplicant.cor}`
+                      )
+                    }
+                    className="w-48 h-36 object-cover rounded-lg shadow-md border cursor-pointer hover:scale-105"
                   />
                 ) : (
                   <p className="text-sm text-gray-500">No COR Available</p>
                 )}
               </div>
+
+              {/* School ID */}
               <div className="text-gray-700 text-center">
-                <p className="font-bold mb-1">School ID:</p>
+                <p className="font-bold mb-1">School ID</p>
                 {selectedApplicant.schoolId ? (
                   <img
                     src={`http://localhost:5000/${selectedApplicant.schoolId}`}
                     alt="School ID"
-                    className="w-48 h-36 object-cover rounded-lg shadow-md border"
+                    onClick={() =>
+                      handleOpenFullImage(
+                        `http://localhost:5000/${selectedApplicant.schoolId}`
+                      )
+                    }
+                    className="w-48 h-36 object-cover rounded-lg shadow-md border cursor-pointer hover:scale-105"
                   />
                 ) : (
                   <p className="text-sm text-gray-500">
@@ -329,14 +357,29 @@ const EmployerAppList = () => {
                   </p>
                 )}
               </div>
+
               <button
                 onClick={handleCloseModal}
-                className="bg-yellow-400 hover:bg-yellow-500 text-white font-semibold py-2 px-6 rounded shadow-md"
+                className="bg-yellow-400 hover:bg-yellow-500 text-white font-semibold py-2 px-6 rounded shadow-md mt-4"
               >
                 Close
               </button>
             </div>
           </div>
+        </div>
+      )}
+
+      {/* Full Image Modal */}
+      {fullImage && (
+        <div
+          className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-80 z-50 cursor-pointer"
+          onClick={handleCloseFullImage}
+        >
+          <img
+            src={fullImage}
+            alt="Full"
+            className="max-h-[90%] max-w-[90%] object-contain rounded-lg shadow-lg"
+          />
         </div>
       )}
     </div>

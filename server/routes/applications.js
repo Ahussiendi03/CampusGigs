@@ -19,7 +19,8 @@ router.post('/apply', upload.single('applicationLetter'), async (req, res) => {
   console.log('req.file:', req.file);
 
   const { jobId, applicantId, employerId } = req.body;
-  const letterFile = req.file ? req.file.path : null;
+  const letterFile = req.file ? req.file.filename : null;
+
 
   // Basic validation
   if (!jobId || !applicantId || !employerId || !letterFile) {

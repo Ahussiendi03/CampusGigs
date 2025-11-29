@@ -17,6 +17,7 @@ router.get('/', async (req, res) => {
   try {
     const jobPosts = await JobPost.find({ status: 'approved' })
       .populate('employerId', 'businessName businessImage') // Populating employer details
+      .sort({ updatedAt: -1 }) // <-- newest first
       .exec();
 
     res.status(200).json(jobPosts);
@@ -25,6 +26,7 @@ router.get('/', async (req, res) => {
     res.status(500).json({ error: 'Error fetching job posts' });
   }
 });
+
 
 router.get('/employers/:employerId', async (req, res) => {
   try {

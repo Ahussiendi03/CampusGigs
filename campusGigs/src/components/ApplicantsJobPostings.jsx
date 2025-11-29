@@ -37,27 +37,37 @@ const ApplicantsJobPostings = () => {
         const res = await axios.get(
           "http://localhost:5000/api/jobPosts?status=approved"
         );
-        setJobPosts(res.data);
+        // Sort by newest approved first (based on updatedAt)
+        const sortedJobs = res.data.sort(
+          (a, b) => new Date(b.updatedAt) - new Date(a.updatedAt)
+        );
+        setJobPosts(sortedJobs);
       } catch (error) {
         console.error("Error fetching job posts:", error);
       }
     };
-
+  
     const fetchApprovedTutorPosts = async () => {
       try {
         const res = await axios.get("http://localhost:5000/api/tutorPosts");
-        setTutorPosts(res.data);
+        // Sort by newest created first
+        const sortedTutors = res.data.sort(
+          (a, b) => new Date(b.createdAt) - new Date(a.createdAt)
+        );
+        setTutorPosts(sortedTutors);
       } catch (error) {
         console.error("Error fetching tutor posts:", error);
       }
     };
-
+  
     const storedApplicantId = localStorage.getItem("applicantId");
     if (storedApplicantId) setApplicantId(storedApplicantId);
-
+  
     fetchApprovedJobPosts();
     fetchApprovedTutorPosts();
   }, []);
+  
+  
   const handleApply = async () => {
     if (!applicantId || !selectedPost || !applicationLetter) {
       setErrorModal({ show: true, message: "Missing applicant, post, or application letter" });

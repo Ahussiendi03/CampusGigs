@@ -14,7 +14,7 @@ const JobPostSchema = new mongoose.Schema({
     default: 'pending' 
   },  
   dismissalReason: { type: String },
-});
+},{ timestamps: true });
 
 const JobPost = mongoose.model('JobPost', JobPostSchema);
 module.exports = JobPost;
